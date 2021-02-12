@@ -38,4 +38,27 @@ void *scp(void *ptr)
 #define CELL_WIDTH ((float) SCREEN_WIDTH / (float) COLS)
 #define CELL_HEIGHT ((float) SCREEN_HEIGHT / (float) ROWS)
 
+SDL_Window *atomato_create_window(void)
+{
+    return scp(SDL_CreateWindow(
+                   "Atomato",
+                   0, 0,
+                   SCREEN_WIDTH, SCREEN_HEIGHT,
+                   SDL_WINDOW_RESIZABLE));
+}
+
+SDL_Renderer *atomato_create_renderer(SDL_Window *window)
+{
+    SDL_Renderer * renderer =
+        scp(SDL_CreateRenderer(window,
+                               -1,
+                               SDL_RENDERER_ACCELERATED));
+
+    scc(SDL_RenderSetLogicalSize(renderer,
+                                 SCREEN_WIDTH,
+                                 SCREEN_HEIGHT));
+
+    return renderer;
+}
+
 #endif  // ATOMATO_H_

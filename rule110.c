@@ -83,20 +83,8 @@ int main(void)
 {
     scc(SDL_Init(SDL_INIT_VIDEO));
 
-    SDL_Window * const window =
-        scp(SDL_CreateWindow("Atomato",
-                             0, 0,
-                             SCREEN_WIDTH, SCREEN_HEIGHT,
-                             SDL_WINDOW_RESIZABLE));
-
-    SDL_Renderer * const renderer =
-        scp(SDL_CreateRenderer(window,
-                               -1,
-                               SDL_RENDERER_ACCELERATED));
-
-    scc(SDL_RenderSetLogicalSize(renderer,
-                                 SCREEN_WIDTH,
-                                 SCREEN_HEIGHT));
+    SDL_Window * const window = atomato_create_window();
+    SDL_Renderer * const renderer = atomato_create_renderer(window);
 
     bool quit = false;
 
@@ -135,5 +123,6 @@ int main(void)
     }
 
     SDL_Quit();
+
     return 0;
 }
