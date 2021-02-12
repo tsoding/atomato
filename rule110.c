@@ -58,10 +58,10 @@ Row next_row(Row prev)
     // *****
     //  ^
 
-    for (int i = 1; i < COLS - 1; ++i) {
-        const int index = PATTERN(prev.cells[i - 1],
+    for (int i = 0; i < COLS; ++i) {
+        const int index = PATTERN(prev.cells[mod(i - 1, COLS)],
                                   prev.cells[i],
-                                  prev.cells[i + 1]);
+                                  prev.cells[mod(i + 1, COLS)]);
         next.cells[i] = patterns[index];
     }
 
