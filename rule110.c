@@ -79,6 +79,37 @@ Row random_row(void)
     return result;
 }
 
+typedef struct {
+    Row rows[ROWS];
+    int begin;
+    int size;
+} Board;
+
+Board board = {0};
+
+void board_push_row(Board *board, Row row)
+{
+    board->rows[mod(board->begin + board->size, ROWS)] = row;
+
+    if (board->size < ROWS) {
+        board->size += 1;
+    } else {
+        board->begin = mod(board->begin + 1, ROWS);
+    }
+}
+
+void board_next_row(Board *board)
+{
+    board_push_row(board, next_row(board->rows[mod(board->begin + board->size - 1, ROWS)]));
+}
+
+void board_render(SDL_Renderer *renderer, const Board *board)
+{
+    for (int row = 0; row < board->size; ++row) {
+        render_row(renderer, board->rows[mod(board->begin + row, ROWS)], row * CELL_HEIGHT);
+    }
+}
+
 int main(void)
 {
     scc(SDL_Init(SDL_INIT_VIDEO));
@@ -88,14 +119,7 @@ int main(void)
 
     bool quit = false;
 
-    Row rows[ROWS];
-
-    _Static_assert(ROWS > 0, "We need to have at least 1 row");
-    rows[0] = random_row();
-
-    for (int i = 1; i < ROWS; ++i) {
-        rows[i] = next_row(rows[i - 1]);
-    }
+    board_push_row(&board, random_row());
 
     while (!quit) {
         SDL_Event event;
@@ -113,13 +137,12 @@ int main(void)
                 HEX_COLOR_UNPACK(BACKGROUND_COLOR)));
         scc(SDL_RenderClear(renderer));
 
-        for (int i = 0; i < ROWS; ++i) {
-            render_row(renderer, rows[i], i * CELL_HEIGHT);
-        }
+        board_render(renderer, &board);
+        board_next_row(&board);
 
         SDL_RenderPresent(renderer);
 
-        SDL_Delay(10);
+        SDL_Delay(50);
     }
 
     SDL_Quit();
