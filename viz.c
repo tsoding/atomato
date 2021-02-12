@@ -1,6 +1,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdarg.h>
+#include <stdbool.h>
 #include <string.h>
 #include <errno.h>
 
@@ -50,43 +51,49 @@ char *slurp_file(const char *file_path)
 #undef SLURP_FILE_PANIC
 }
 
-GLuint compile_shader_file(const char *file_path, GLenum shader_type)
+bool compile_shader_source(const GLchar *source, GLenum shader_type, GLuint *shader)
 {
-    GLuint shader = glCreateShader(shader_type);
-    GLchar *source = slurp_file(file_path);
-    glShaderSource(shader, 1, (const GLchar * const*) &source, NULL);
-    glCompileShader(shader);
+    *shader = glCreateShader(shader_type);
+    glShaderSource(*shader, 1, &source, NULL);
+    glCompileShader(*shader);
 
     GLint compiled = 0;
-    glGetShaderiv(shader, GL_COMPILE_STATUS, &compiled);
+    glGetShaderiv(*shader, GL_COMPILE_STATUS, &compiled);
 
     if (!compiled) {
         GLchar message[1024];
         GLsizei message_size = 0;
-        glGetShaderInfoLog(shader, sizeof(message), &message_size, message);
-        fprintf(stderr, "%s:%.*s\n", file_path, message_size, message);
+        glGetShaderInfoLog(*shader, sizeof(message), &message_size, message);
+        fprintf(stderr, "%.*s\n", message_size, message);
+        return false;
     }
 
-    free(source);
-
-    return shader;
+    return true;
 }
 
-GLuint link_program(GLuint vert_shader, GLuint frag_shader)
+bool compile_shader_file(const char *file_path, GLenum shader_type, GLuint *shader)
 {
-    GLuint program = glCreateProgram();
+    char *source = slurp_file(file_path);
+    bool err = compile_shader_source(source, shader_type, shader);
+    free(source);
+    return err;
+}
 
-    glAttachShader(program, vert_shader);
-    glAttachShader(program, frag_shader);
-    glLinkProgram(program);
+bool link_program(GLuint vert_shader, GLuint frag_shader, GLuint *program)
+{
+    *program = glCreateProgram();
+
+    glAttachShader(*program, vert_shader);
+    glAttachShader(*program, frag_shader);
+    glLinkProgram(*program);
 
     GLint linked = 0;
-    glGetProgramiv(program, GL_LINK_STATUS, &linked);
+    glGetProgramiv(*program, GL_LINK_STATUS, &linked);
     if (!linked) {
         GLsizei message_size = 0;
         GLchar message[1024];
 
-        glGetProgramInfoLog(program, sizeof(message), &message_size, message);
+        glGetProgramInfoLog(*program, sizeof(message), &message_size, message);
         fprintf(stderr, "Program Linking: %.*s\n", message_size, message);
     }
 
@@ -97,6 +104,74 @@ GLuint link_program(GLuint vert_shader, GLuint frag_shader)
 }
 
 GLuint program = 0;
+GLuint failed_program = 0;
+
+const char *failed_vert_source =
+    "#version 130\n"
+    "\n"
+    "void main(void)\n"
+    "{\n"
+    "    int gray = gl_VertexID ^ (gl_VertexID >> 1);\n"
+    "\n"
+    "    gl_Position = vec4(\n"
+    "        2 * (gray / 2) - 1,\n"
+    "        2 * (gray % 2) - 1,\n"
+    "        0.0,\n"
+    "        1.0);\n"
+    "};\n";
+
+const char *failed_frag_source =
+    "#version 130\n"
+    "\n"
+    "out vec4 color;\n"
+    "\n"
+    "void main(void) {\n"
+    "    color = vec4(1.0, 0.0, 0.0, 1.0);\n"
+    "};\n";
+
+
+void init_failed_program(void)
+{
+    GLuint vert = 0;
+    if (!compile_shader_source(failed_vert_source, GL_VERTEX_SHADER, &vert)) {
+        exit(1);
+    }
+
+    GLuint frag = 0;
+    if (!compile_shader_source(failed_frag_source, GL_FRAGMENT_SHADER, &frag)) {
+        exit(1);
+    }
+
+    if (!link_program(vert, frag, &failed_program)) {
+        exit(1);
+    }
+}
+
+void reload_shaders(void)
+{
+    glDeleteProgram(program);
+
+    GLuint vert = 0;
+    if (!compile_shader_file("./viz.vert", GL_VERTEX_SHADER, &vert)) {
+        glUseProgram(failed_program);
+        return;
+    }
+
+    GLuint frag = 0;
+    if (!compile_shader_file("./viz.frag", GL_FRAGMENT_SHADER, &frag)) {
+        glUseProgram(failed_program);
+        return;
+    }
+
+    if (!link_program(vert, frag, &program)) {
+        glUseProgram(failed_program);
+        return;
+    }
+
+    glUseProgram(program);
+
+    printf("Successfully Reload the Shaders\n");
+}
 
 void key_callback(GLFWwindow* window, int key, int scancode, int action, int mods)
 {
@@ -105,12 +180,8 @@ void key_callback(GLFWwindow* window, int key, int scancode, int action, int mod
     (void) action;
     (void) mods;
 
-    if (key == GLFW_KEY_F5) {
-        glDeleteProgram(program);
-        program = link_program(
-                      compile_shader_file("./viz.vert", GL_VERTEX_SHADER),
-                      compile_shader_file("./viz.frag", GL_FRAGMENT_SHADER));
-        glUseProgram(program);
+    if (key == GLFW_KEY_F5 && action == GLFW_PRESS) {
+        reload_shaders();
     }
 }
 
@@ -145,11 +216,8 @@ int main()
 
     glfwMakeContextCurrent(window);
 
-    program = link_program(
-                  compile_shader_file("./viz.vert", GL_VERTEX_SHADER),
-                  compile_shader_file("./viz.frag", GL_FRAGMENT_SHADER));
-
-    glUseProgram(program);
+    init_failed_program();
+    reload_shaders();
 
     glfwSetKeyCallback(window, key_callback);
     glfwSetFramebufferSizeCallback(window, window_size_callback);
