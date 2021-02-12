@@ -99,7 +99,7 @@ int main(void)
 
     while (!quit) {
         SDL_Event event;
-        while (!SDL_PollEvent(&event)) {
+        while (SDL_PollEvent(&event)) {
             switch(event.type) {
             case SDL_QUIT: {
                 quit = true;

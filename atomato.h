@@ -33,8 +33,8 @@ void *scp(void *ptr)
   ((color >> (8 * 1)) & 0xFF),  \
   ((color >> (8 * 0)) & 0xFF)
 
-#define ROWS 100
-#define COLS 100
+#define ROWS 10
+#define COLS 10
 #define CELL_WIDTH ((float) SCREEN_WIDTH / (float) COLS)
 #define CELL_HEIGHT ((float) SCREEN_HEIGHT / (float) ROWS)
 
@@ -59,6 +59,31 @@ SDL_Renderer *atomato_create_renderer(SDL_Window *window)
                                  SCREEN_HEIGHT));
 
     return renderer;
+}
+
+void atomato_fill_rect(SDL_Renderer *renderer,
+                       float x, float y,
+                       float w, float h,
+                       Uint32 color)
+{
+    SDL_Rect rect = {
+        .x = (int) floorf(x),
+        .y = (int) floorf(y),
+        .w = (int) floorf(w),
+        .h = (int) floorf(h),
+    };
+
+
+    scc(SDL_SetRenderDrawColor(
+            renderer,
+            HEX_COLOR_UNPACK(color)));
+
+    scc(SDL_RenderFillRect(renderer, &rect));
+}
+
+int mod(int a, int b)
+{
+    return (a % b + b) % b;
 }
 
 #endif  // ATOMATO_H_
