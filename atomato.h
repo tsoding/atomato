@@ -45,6 +45,7 @@ void *scp(void *ptr)
 
 typedef struct {
     bool quit;
+    bool pause;
     float next_gen_timeout;
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -132,6 +133,16 @@ void atomato_poll_events(void (*callback)(const SDL_Event *event))
             global.quit = true;
         }
         break;
+
+        case SDL_KEYDOWN: {
+            switch (event.key.keysym.sym) {
+            case SDLK_SPACE: {
+                global.pause = !global.pause;
+            }
+            break;
+            }
+        }
+        break;
         }
 
         if (callback) {
@@ -143,7 +154,9 @@ void atomato_poll_events(void (*callback)(const SDL_Event *event))
         global.next_gen_timeout = NEXT_GEN_TIMEOUT;
     }
 
-    global.next_gen_timeout -= DELTA_TIME_SEC;
+    if (!global.pause) {
+        global.next_gen_timeout -= DELTA_TIME_SEC;
+    }
 }
 
 bool atomato_is_next_gen(void)
