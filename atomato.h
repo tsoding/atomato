@@ -43,7 +43,7 @@ void *scp(void *ptr)
 #define CELL_WIDTH ((float) SCREEN_WIDTH / (float) COLS)
 #define CELL_HEIGHT ((float) SCREEN_HEIGHT / (float) ROWS)
 
-#define NEXT_GEN_TIMEOUT 0.5f
+#define NEXT_GEN_TIMEOUT 0.05f
 
 typedef struct {
     bool quit;

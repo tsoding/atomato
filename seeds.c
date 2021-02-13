@@ -22,8 +22,8 @@ int board_nbors(const Board *board, int row0, int col0)
     for (int drow = -1; drow <= 1; ++drow) {
         for (int dcol = -1; dcol <= 1; ++dcol) {
             if (drow != 0 || dcol != 0) {
-                const int row = row0 + drow;
-                const int col = col0 + dcol;
+                const int row = mod(row0 + drow, ROWS);
+                const int col = mod(col0 + dcol, COLS);
 
                 if (board->cells[row][col] == ON) {
                     result += 1;
@@ -74,14 +74,34 @@ void random_board(Board *board)
 Board board[2] = {0};
 int fg = 0;
 
+void seeds_event_callback(const SDL_Event *event)
+{
+    switch (event->type) {
+    case SDL_MOUSEBUTTONDOWN: {
+        const int col = (int) floorf(event->button.x / CELL_WIDTH);
+        const int row = (int) floorf(event->button.y / CELL_HEIGHT);
+
+        board[fg].cells[row][col] = 1 - board[fg].cells[row][col];
+    }
+    break;
+
+    case SDL_KEYDOWN: {
+        if (event->key.keysym.sym == SDLK_r) {
+            memset(board[fg].cells, 0, sizeof(Cell) * ROWS * COLS);
+        }
+    }
+    break;
+    }
+}
+
 int main(void)
 {
     atomato_begin();
 
-    random_board(&board[fg]);
+    // random_board(&board[fg]);
 
     while (!atomato_time_to_quit()) {
-        atomato_poll_events(NULL);
+        atomato_poll_events(seeds_event_callback);
 
         if (atomato_is_next_gen()) {
             int bg = 1 - fg;
