@@ -51,6 +51,8 @@ typedef struct {
     float next_gen_timeout;
     SDL_Window *window;
     SDL_Renderer *renderer;
+    float mouse_x;
+    float mouse_y;
 } Atomato;
 
 Atomato global = {0};
@@ -124,25 +126,38 @@ void atomato_begin_rendering(void)
     scc(SDL_RenderClear(global.renderer));
 }
 
-#define PAUSE_PADDING 50.0
-#define PAUSE_BAR_WIDTH 20.0
-#define PAUSE_BAR_HEIGHT 100.0
-#define PAUSE_BAR_GAP 20.0
-#define PAUSE_BAR_COLOR 0xFF0000BB
+#define WITH_ALPHA(color, alpha) ((color & 0xFFFFFF00) | alpha)
+
+#define PAUSE_PADDING 50.0f
+#define PAUSE_BAR_WIDTH 20.0f
+#define PAUSE_BAR_HEIGHT 100.0f
+#define PAUSE_BAR_GAP 20.0f
+#define PAUSE_BAR_COLOR 0xFF0000FF
+#define PAUSE_WIDTH (2.0f * PAUSE_BAR_WIDTH + PAUSE_BAR_GAP)
+#define PAUSE_HEIGHT PAUSE_BAR_HEIGHT
 
 void atomato_draw_pause_symbol(float x, float y)
 {
+    Uint32 color = PAUSE_BAR_COLOR;
+
+    if (x <= global.mouse_x &&
+            global.mouse_x <= x + PAUSE_WIDTH &&
+            y <= global.mouse_y &&
+            global.mouse_y <= y + PAUSE_HEIGHT) {
+        color = WITH_ALPHA(color, 150);
+    }
+
     atomato_fill_rect(
         x, y,
         PAUSE_BAR_WIDTH,
         PAUSE_BAR_HEIGHT,
-        PAUSE_BAR_COLOR);
+        color);
 
     atomato_fill_rect(
         x + PAUSE_BAR_GAP + PAUSE_BAR_WIDTH, y,
         PAUSE_BAR_WIDTH,
         PAUSE_BAR_HEIGHT,
-        PAUSE_BAR_COLOR);
+        color);
 }
 
 void atomato_end_rendering(void)
@@ -172,6 +187,12 @@ void atomato_poll_events(void (*callback)(const SDL_Event *event))
             }
             break;
             }
+        }
+        break;
+
+        case SDL_MOUSEMOTION: {
+            global.mouse_x = event.motion.x;
+            global.mouse_y = event.motion.y;
         }
         break;
         }
