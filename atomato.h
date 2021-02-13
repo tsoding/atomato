@@ -57,29 +57,6 @@ typedef struct {
 
 Atomato global = {0};
 
-SDL_Window *atomato_create_window(void)
-{
-    return scp(SDL_CreateWindow(
-                   "Atomato",
-                   0, 0,
-                   SCREEN_WIDTH, SCREEN_HEIGHT,
-                   SDL_WINDOW_RESIZABLE));
-}
-
-SDL_Renderer *atomato_create_renderer(SDL_Window *window)
-{
-    SDL_Renderer * renderer =
-        scp(SDL_CreateRenderer(window,
-                               -1,
-                               SDL_RENDERER_ACCELERATED));
-
-    scc(SDL_RenderSetLogicalSize(renderer,
-                                 SCREEN_WIDTH,
-                                 SCREEN_HEIGHT));
-
-    return renderer;
-}
-
 void atomato_fill_rect(float x, float y, float w, float h, Uint32 color)
 {
     const SDL_Rect rect = {
@@ -100,8 +77,20 @@ void atomato_begin(void)
 {
     scc(SDL_Init(SDL_INIT_VIDEO));
 
-    global.window = atomato_create_window();
-    global.renderer = atomato_create_renderer(global.window);
+    global.window = scp(SDL_CreateWindow(
+                            "Atomato",
+                            0, 0,
+                            SCREEN_WIDTH, SCREEN_HEIGHT,
+                            SDL_WINDOW_RESIZABLE));
+
+    global.renderer =
+        scp(SDL_CreateRenderer(global.window,
+                               -1,
+                               SDL_RENDERER_ACCELERATED));
+
+    scc(SDL_RenderSetLogicalSize(global.renderer,
+                                 SCREEN_WIDTH,
+                                 SCREEN_HEIGHT));
 
     scc(SDL_SetRenderDrawBlendMode(
             global.renderer,
