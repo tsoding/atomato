@@ -100,6 +100,10 @@ void atomato_begin(void)
 
     global.window = atomato_create_window();
     global.renderer = atomato_create_renderer(global.window);
+
+    scc(SDL_SetRenderDrawBlendMode(
+            global.renderer,
+            SDL_BLENDMODE_BLEND));
 }
 
 void atomato_end(void)
@@ -120,8 +124,33 @@ void atomato_begin_rendering(void)
     scc(SDL_RenderClear(global.renderer));
 }
 
+#define PAUSE_PADDING 50.0
+#define PAUSE_BAR_WIDTH 20.0
+#define PAUSE_BAR_HEIGHT 100.0
+#define PAUSE_BAR_GAP 20.0
+#define PAUSE_BAR_COLOR 0xFF0000BB
+
+void atomato_draw_pause_symbol(float x, float y)
+{
+    atomato_fill_rect(
+        x, y,
+        PAUSE_BAR_WIDTH,
+        PAUSE_BAR_HEIGHT,
+        PAUSE_BAR_COLOR);
+
+    atomato_fill_rect(
+        x + PAUSE_BAR_GAP + PAUSE_BAR_WIDTH, y,
+        PAUSE_BAR_WIDTH,
+        PAUSE_BAR_HEIGHT,
+        PAUSE_BAR_COLOR);
+}
+
 void atomato_end_rendering(void)
 {
+    if (global.pause) {
+        atomato_draw_pause_symbol(PAUSE_PADDING, PAUSE_PADDING);
+    }
+
     SDL_RenderPresent(global.renderer);
     SDL_Delay(DELTA_TIME_MS);
 }
