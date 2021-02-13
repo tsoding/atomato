@@ -25,7 +25,7 @@ void *scp(void *ptr)
 }
 
 #define SCREEN_WIDTH 1024
-#define SCREEN_HEIGHT 768
+#define SCREEN_HEIGHT 1024
 #define SCREEN_FPS 60
 #define DELTA_TIME_SEC (1.0f / SCREEN_FPS)
 #define DELTA_TIME_MS ((int) floorf(DELTA_TIME_SEC * 1000))
