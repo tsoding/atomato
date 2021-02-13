@@ -32,9 +32,11 @@ int board_nbors(const Board *board, int row0, int col0, Cell cell)
 void next_board(const Board *prev, Board *next,
                 int (*rule)(const Board *prev, int row, int col))
 {
-    for (int row = 0; row < ROWS; ++row) {
-        for (int col = 0; col < COLS; ++col) {
-            next->cells[row][col] = rule(prev, row, col);
+    if (rule) {
+        for (int row = 0; row < ROWS; ++row) {
+            for (int col = 0; col < COLS; ++col) {
+                next->cells[row][col] = rule(prev, row, col);
+            }
         }
     }
 }
@@ -73,11 +75,12 @@ void life_event_callback(const SDL_Event *event)
 }
 
 int life_event_loop(void (*init_board)(Board *board),
-                    int (*rule)(const Board *prev, int row, int col),
+                    Cell (*rule)(const Board *prev, int row, int col),
                     void (*render_board)(const Board *board))
 {
-
-    init_board(&board[fg]);
+    if (init_board) {
+        init_board(&board[fg]);
+    }
 
     atomato_begin();
 
@@ -92,7 +95,9 @@ int life_event_loop(void (*init_board)(Board *board),
 
         atomato_begin_rendering();
         {
-            render_board(&board[fg]);
+            if (render_board) {
+                render_board(&board[fg]);
+            }
         }
         atomato_end_rendering();
     }
