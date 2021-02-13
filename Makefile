@@ -1,12 +1,9 @@
-GL_PKGS=sdl2
+PKGS=sdl2
 
-CFLAGS=-Wall -Wextra -std=c11 -pedantic
+CFLAGS=-Wall -Wextra -std=c11 -pedantic `pkg-config --cflags $(PKGS)`
+LIBS=`pkg-config --libs $(PKGS)` -lm
 
-all: rule110 gol
+all: rule110 gol seeds
 
-rule110: rule110.c
-	$(CC) $(CFLAGS) `pkg-config --cflags $(GL_PKGS)` -o rule110 rule110.c `pkg-config --libs $(GL_PKGS)` -lm
-
-gol: gol.c
-	$(CC) $(CFLAGS) `pkg-config --cflags $(GL_PKGS)` -o gol gol.c `pkg-config --libs $(GL_PKGS)` -lm
-
+%: %.c
+	$(CC) $(CFLAGS) -o $@ $< $(LIBS)

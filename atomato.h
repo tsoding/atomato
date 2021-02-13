@@ -1,6 +1,7 @@
 #ifndef ATOMATO_H_
 #define ATOMATO_H_
 
+#include <stdbool.h>
 #include <SDL.h>
 
 int scc(int code)
@@ -30,6 +31,7 @@ void *scp(void *ptr)
 #define DELTA_TIME_MS ((int) floorf(DELTA_TIME_SEC * 1000))
 
 #define BACKGROUND_COLOR 0x181818ff
+#define FOREGROUND_COLOR 0xFFAABBFF
 #define HEX_COLOR_UNPACK(color) \
   ((color >> (8 * 3)) & 0xFF),  \
   ((color >> (8 * 2)) & 0xFF),  \
@@ -41,7 +43,7 @@ void *scp(void *ptr)
 #define CELL_WIDTH ((float) SCREEN_WIDTH / (float) COLS)
 #define CELL_HEIGHT ((float) SCREEN_HEIGHT / (float) ROWS)
 
-#define NEXT_GEN_TIMEOUT 0.1f
+#define NEXT_GEN_TIMEOUT 0.5f
 
 typedef struct {
     bool quit;
