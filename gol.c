@@ -16,12 +16,11 @@ typedef struct {
     Cell cells[ROWS][COLS];
 } Board;
 
-void render_board(SDL_Renderer *renderer, const Board *board)
+void render_board(const Board *board)
 {
     for (int row = 0; row < ROWS; ++row) {
         for (int col = 0; col < COLS; ++col) {
             atomato_fill_rect(
-                renderer,
                 col * CELL_WIDTH,
                 row * CELL_HEIGHT,
                 CELL_WIDTH,
@@ -101,45 +100,31 @@ int fg = 0;
 
 int main()
 {
-    scc(SDL_Init(SDL_INIT_VIDEO));
-
-    SDL_Window *window = atomato_create_window();
-    SDL_Renderer *renderer = atomato_create_renderer(window);
-
-    bool quit = false;
+    atomato_begin();
 
     // random_board(&board[fg]);
 
     put_glider_at(&board[fg], 0, 0);
     put_glider_at(&board[fg], 4, 4);
+    put_glider_at(&board[fg], 8, 8);
 
-    while (!quit) {
-        SDL_Event event;
-        while (SDL_PollEvent(&event)) {
-            switch(event.type) {
-            case SDL_QUIT: {
-                quit = true;
-            }
-            break;
-            }
+    while (!atomato_time_to_quit()) {
+        atomato_poll_events(NULL);
+
+        if (atomato_is_next_gen()) {
+            const int bg = 1 - fg;
+            next_board(&board[fg], &board[bg]);
+            fg = bg;
         }
 
-        scc(SDL_SetRenderDrawColor(
-                renderer,
-                HEX_COLOR_UNPACK(BACKGROUND_COLOR)));
-        scc(SDL_RenderClear(renderer));
-
-        render_board(renderer, &board[fg]);
-
-        const int bg = 1 - fg;
-        next_board(&board[fg], &board[bg]);
-        fg = bg;
-
-        SDL_RenderPresent(renderer);
-
-        SDL_Delay(150);
+        atomato_begin_rendering();
+        {
+            render_board(&board[fg]);
+        }
+        atomato_end_rendering();
     }
 
-    SDL_Quit();
+    atomato_end();
+
     return 0;
 }
