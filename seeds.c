@@ -94,11 +94,31 @@ void seeds_event_callback(const SDL_Event *event)
     }
 }
 
+void put_glider_at(Board *board, int row0, int col0)
+{
+    static const Cell glider[4][2] = {
+        {ON, OFF},
+        {OFF, ON},
+        {OFF, ON},
+        {ON, OFF},
+    };
+
+    for (int drow = 0; drow < 4; ++drow) {
+        for (int dcol = 0; dcol < 2; ++dcol) {
+            const int row = mod(row0 + drow, ROWS);
+            const int col = mod(col0 + dcol, COLS);
+            board->cells[row][col] = glider[drow][dcol];
+        }
+    }
+}
+
 int main(void)
 {
     atomato_begin();
 
-    // random_board(&board[fg]);
+    for (int i = 0; i < 10; ++i) {
+        put_glider_at(&board[fg], i * 4, i * 4);
+    }
 
     while (!atomato_time_to_quit()) {
         atomato_poll_events(seeds_event_callback);
