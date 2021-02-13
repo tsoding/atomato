@@ -21,11 +21,12 @@ Cell seeds_rule(const Board *prev, int row, int col)
     }
 }
 
-void render_board(const Board *board)
+void render_board(Atomato *context, const Board *board)
 {
     for (int row = 0; row < ROWS; ++row) {
         for (int col = 0; col < COLS; ++col) {
             atomato_fill_rect(
+                context,
                 col * CELL_WIDTH,
                 row * CELL_HEIGHT,
                 CELL_WIDTH,

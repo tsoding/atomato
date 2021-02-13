@@ -31,10 +31,11 @@ typedef struct {
     Cell cells[COLS];
 } Row;
 
-void render_row(Row row, int y)
+void render_row(Atomato *context, Row row, int y)
 {
     for (int i = 0; i < COLS; ++i) {
         atomato_fill_rect(
+            context,
             i * CELL_WIDTH,
             y,
             CELL_WIDTH,
@@ -97,39 +98,41 @@ void board_next_row(Board *board)
     board_push_row(board, next_row(board->rows[mod(board->begin + board->size - 1, ROWS)]));
 }
 
-void board_render(const Board *board)
+void board_render(Atomato *context, const Board *board)
 {
     for (int row = 0; row < board->size; ++row) {
-        render_row(board->rows[mod(board->begin + row, ROWS)], row * CELL_HEIGHT);
+        render_row(context, board->rows[mod(board->begin + row, ROWS)], row * CELL_HEIGHT);
     }
 }
 
 int main(void)
 {
-    atomato_begin();
+    Atomato context = {0};
+
+    atomato_begin(&context);
 
     board_push_row(&board, random_row());
 
-    while (!atomato_time_to_quit()) {
+    while (!atomato_time_to_quit(&context)) {
         // Handle Inputs
-        atomato_poll_events(NULL);
+        atomato_poll_events(&context, NULL);
 
         // Update State
-        if (atomato_is_next_gen()) {
+        if (atomato_is_next_gen(&context)) {
             board_next_row(&board);
         }
 
         // Render State
-        atomato_begin_rendering();
+        atomato_begin_rendering(&context);
         {
-            board_render(&board);
+            board_render(&context, &board);
         }
-        atomato_end_rendering();
+        atomato_end_rendering(&context);
     }
 
     // TODO: pause on space
 
-    atomato_end();
+    atomato_end(&context);
 
     return 0;
 }

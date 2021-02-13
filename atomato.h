@@ -55,9 +55,10 @@ typedef struct {
     float mouse_y;
 } Atomato;
 
-Atomato global = {0};
-
-void atomato_fill_rect(float x, float y, float w, float h, Uint32 color)
+void atomato_fill_rect(Atomato *context,
+                       float x, float y,
+                       float w, float h,
+                       Uint32 color)
 {
     const SDL_Rect rect = {
         .x = (int) floorf(x),
@@ -67,52 +68,53 @@ void atomato_fill_rect(float x, float y, float w, float h, Uint32 color)
     };
 
     scc(SDL_SetRenderDrawColor(
-            global.renderer,
+            context->renderer,
             HEX_COLOR_UNPACK(color)));
 
-    scc(SDL_RenderFillRect(global.renderer, &rect));
+    scc(SDL_RenderFillRect(context->renderer, &rect));
 }
 
-void atomato_begin(void)
+void atomato_begin(Atomato *context)
 {
     scc(SDL_Init(SDL_INIT_VIDEO));
 
-    global.window = scp(SDL_CreateWindow(
-                            "Atomato",
-                            0, 0,
-                            SCREEN_WIDTH, SCREEN_HEIGHT,
-                            SDL_WINDOW_RESIZABLE));
+    context->window = scp(SDL_CreateWindow(
+                              "Atomato",
+                              0, 0,
+                              SCREEN_WIDTH, SCREEN_HEIGHT,
+                              SDL_WINDOW_RESIZABLE));
 
-    global.renderer =
-        scp(SDL_CreateRenderer(global.window,
+    context->renderer =
+        scp(SDL_CreateRenderer(context->window,
                                -1,
                                SDL_RENDERER_ACCELERATED));
 
-    scc(SDL_RenderSetLogicalSize(global.renderer,
+    scc(SDL_RenderSetLogicalSize(context->renderer,
                                  SCREEN_WIDTH,
                                  SCREEN_HEIGHT));
 
     scc(SDL_SetRenderDrawBlendMode(
-            global.renderer,
+            context->renderer,
             SDL_BLENDMODE_BLEND));
 }
 
-void atomato_end(void)
+void atomato_end(Atomato *context)
 {
+    (void) context;
     SDL_Quit();
 }
 
-bool atomato_time_to_quit(void)
+bool atomato_time_to_quit(const Atomato *context)
 {
-    return global.quit;
+    return context->quit;
 }
 
-void atomato_begin_rendering(void)
+void atomato_begin_rendering(Atomato *context)
 {
     scc(SDL_SetRenderDrawColor(
-            global.renderer,
+            context->renderer,
             HEX_COLOR_UNPACK(BACKGROUND_COLOR)));
-    scc(SDL_RenderClear(global.renderer));
+    scc(SDL_RenderClear(context->renderer));
 }
 
 #define WITH_ALPHA(color, alpha) ((color & 0xFFFFFF00) | alpha)
@@ -125,54 +127,57 @@ void atomato_begin_rendering(void)
 #define PAUSE_WIDTH (2.0f * PAUSE_BAR_WIDTH + PAUSE_BAR_GAP)
 #define PAUSE_HEIGHT PAUSE_BAR_HEIGHT
 
-void atomato_draw_pause_symbol(float x, float y)
+void atomato_draw_pause_symbol(Atomato *context, float x, float y)
 {
     Uint32 color = PAUSE_BAR_COLOR;
 
-    if (x <= global.mouse_x &&
-            global.mouse_x <= x + PAUSE_WIDTH &&
-            y <= global.mouse_y &&
-            global.mouse_y <= y + PAUSE_HEIGHT) {
+    if (x <= context->mouse_x &&
+            context->mouse_x <= x + PAUSE_WIDTH &&
+            y <= context->mouse_y &&
+            context->mouse_y <= y + PAUSE_HEIGHT) {
         color = WITH_ALPHA(color, 150);
     }
 
     atomato_fill_rect(
+        context,
         x, y,
         PAUSE_BAR_WIDTH,
         PAUSE_BAR_HEIGHT,
         color);
 
     atomato_fill_rect(
+        context,
         x + PAUSE_BAR_GAP + PAUSE_BAR_WIDTH, y,
         PAUSE_BAR_WIDTH,
         PAUSE_BAR_HEIGHT,
         color);
 }
 
-void atomato_end_rendering(void)
+void atomato_end_rendering(Atomato *context)
 {
-    if (global.pause) {
-        atomato_draw_pause_symbol(PAUSE_PADDING, PAUSE_PADDING);
+    if (context->pause) {
+        atomato_draw_pause_symbol(context, PAUSE_PADDING, PAUSE_PADDING);
     }
 
-    SDL_RenderPresent(global.renderer);
+    SDL_RenderPresent(context->renderer);
     SDL_Delay(DELTA_TIME_MS);
 }
 
-void atomato_poll_events(void (*callback)(const SDL_Event *event))
+// TODO: remove atomato_poll_events
+void atomato_poll_events(Atomato *context, void (*callback)(const SDL_Event *event))
 {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         switch(event.type) {
         case SDL_QUIT: {
-            global.quit = true;
+            context->quit = true;
         }
         break;
 
         case SDL_KEYDOWN: {
             switch (event.key.keysym.sym) {
             case SDLK_SPACE: {
-                global.pause = !global.pause;
+                context->pause = !context->pause;
             }
             break;
             }
@@ -180,8 +185,8 @@ void atomato_poll_events(void (*callback)(const SDL_Event *event))
         break;
 
         case SDL_MOUSEMOTION: {
-            global.mouse_x = event.motion.x;
-            global.mouse_y = event.motion.y;
+            context->mouse_x = event.motion.x;
+            context->mouse_y = event.motion.y;
         }
         break;
         }
@@ -191,18 +196,18 @@ void atomato_poll_events(void (*callback)(const SDL_Event *event))
         }
     }
 
-    if (global.next_gen_timeout <= 0.0) {
-        global.next_gen_timeout = NEXT_GEN_TIMEOUT;
+    if (context->next_gen_timeout <= 0.0) {
+        context->next_gen_timeout = NEXT_GEN_TIMEOUT;
     }
 
-    if (!global.pause) {
-        global.next_gen_timeout -= DELTA_TIME_SEC;
+    if (!context->pause) {
+        context->next_gen_timeout -= DELTA_TIME_SEC;
     }
 }
 
-bool atomato_is_next_gen(void)
+bool atomato_is_next_gen(Atomato *context)
 {
-    return global.next_gen_timeout <= 0.0f;
+    return context->next_gen_timeout <= 0.0f;
 }
 
 int mod(int a, int b)
