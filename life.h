@@ -48,19 +48,41 @@ void random_board(Board *board, int cell_state)
     }
 }
 
+Board board[2] = {0};
+int fg = 0;
+
+void life_event_callback(const SDL_Event *event)
+{
+    switch (event->type) {
+    case SDL_MOUSEBUTTONDOWN: {
+        const int col = (int) floorf(event->button.x / CELL_WIDTH);
+        const int row = (int) floorf(event->button.y / CELL_HEIGHT);
+
+        // TODO: life_event_callback assumes that there is only two kinds of cells (0 and 1)
+        board[fg].cells[row][col] = 1 - board[fg].cells[row][col];
+    }
+    break;
+
+    case SDL_KEYDOWN: {
+        if (event->key.keysym.sym == SDLK_r) {
+            memset(board[fg].cells, 0, sizeof(Cell) * ROWS * COLS);
+        }
+    }
+    break;
+    }
+}
+
 int life_event_loop(void (*init_board)(Board *board),
                     int (*rule)(const Board *prev, int row, int col),
                     void (*render_board)(const Board *board))
 {
-    Board board[2] = {0};
-    int fg = 0;
 
     init_board(&board[fg]);
 
     atomato_begin();
 
     while (!atomato_time_to_quit()) {
-        atomato_poll_events(NULL);
+        atomato_poll_events(life_event_callback);
 
         if (atomato_is_next_gen()) {
             const int bg = 1 - fg;
