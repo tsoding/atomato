@@ -22,6 +22,8 @@ typedef struct {
     bool cell_clicked;
     int cell_row;
     int cell_col;
+    // TODO: square grid is not scaled with the camera properly
+    // It would be probably better make the grid a texture as well
     bool grid;
     SDL_Texture *board_texture;
     void *board_pixels;
