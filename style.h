@@ -1,0 +1,9 @@
+#ifndef STYLE_H_
+#define STYLE_H_
+
+#define BACKGROUND_COLOR 0x181818ff
+#define PINK_COLOR 0xFFAABBFF
+#define BLUE_COLOR 0xAABBFFFF
+#define RED_COLOR 0xFF0000FF
+
+#endif  // STYLE_H_

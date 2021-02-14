@@ -7,8 +7,8 @@
 #define ALIVE 1
 
 Uint32 cell_color[2] = {
-    [DED] = 0x00000000,
-    [ALIVE] = 0xFFAABBFF
+    [DED] = BACKGROUND_COLOR,
+    [ALIVE] = PINK_COLOR
 };
 
 Cell gol_rule(const Board *prev, int row, int col)

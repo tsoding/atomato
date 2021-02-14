@@ -10,8 +10,8 @@ typedef enum {
 } Cell;
 
 Uint32 cell_color[2] = {
-    [O] = 0x00000000,
-    [I] = 0xFFAABBFF,
+    [O] = BACKGROUND_COLOR,
+    [I] = PINK_COLOR,
 };
 
 #define PATTERN(A, B, C) ((A << 2) | (B << 1) | C)

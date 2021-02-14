@@ -45,6 +45,8 @@
 #include <stdbool.h>
 #include <SDL.h>
 
+#include "./style.h"
+
 int scc(int code)
 {
     if (code < 0) {
@@ -73,8 +75,6 @@ void *scp(void *ptr)
 
 typedef Uint32 Color;
 
-#define BACKGROUND_COLOR 0x181818ff
-#define FOREGROUND_COLOR 0xFFAABBFF
 #define HEX_COLOR_UNPACK(color) \
   ((color >> (8 * 3)) & 0xFF),  \
   ((color >> (8 * 2)) & 0xFF),  \
@@ -212,7 +212,7 @@ void core_begin_rendering(Core *context)
 #define PAUSE_BAR_WIDTH 20.0f
 #define PAUSE_BAR_HEIGHT 100.0f
 #define PAUSE_BAR_GAP 20.0f
-#define PAUSE_BAR_COLOR 0xFF0000FF
+#define PAUSE_BAR_COLOR RED_COLOR
 #define PAUSE_WIDTH (2.0f * PAUSE_BAR_WIDTH + PAUSE_BAR_GAP)
 #define PAUSE_HEIGHT PAUSE_BAR_HEIGHT
 

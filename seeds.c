@@ -8,7 +8,7 @@
 
 Uint32 cell_color[2] = {
     [OFF] = BACKGROUND_COLOR,
-    [ON] = FOREGROUND_COLOR
+    [ON] = PINK_COLOR
 };
 
 Cell seeds_rule(const Board *prev, int row, int col)

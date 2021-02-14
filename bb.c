@@ -12,8 +12,8 @@
 
 Uint32 cell_color[3] = {
     [OFF] = BACKGROUND_COLOR,
-    [ON] = FOREGROUND_COLOR,
-    [DYING] = 0xAABBFFFF,
+    [ON] = PINK_COLOR,
+    [DYING] = BLUE_COLOR,
 };
 
 Cell bb_rule(const Board *prev, int row, int col)
