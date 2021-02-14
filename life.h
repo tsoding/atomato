@@ -1,3 +1,5 @@
+// # Life
+//
 // Here we keep the common code for all of the Cellular Atomata
 // from the Game of Life Family:
 // https://en.wikipedia.org/wiki/Life-like_cellular_automaton
@@ -5,13 +7,15 @@
 #ifndef LIFE_H_
 #define LIFE_H_
 
+#include "square.h"
+
 typedef int Cell;
 
 typedef struct {
     Cell cells[ROWS][COLS];
 } Board;
 
-int board_nbors(const Board *board, int row0, int col0, Cell cell)
+int life_board_nbors(const Board *board, int row0, int col0, Cell cell)
 {
     int result = 0;
     for (int drow = -1; drow <= 1; ++drow) {
@@ -29,19 +33,7 @@ int board_nbors(const Board *board, int row0, int col0, Cell cell)
     return result;
 }
 
-void next_board(const Board *prev, Board *next,
-                int (*rule)(const Board *prev, int row, int col))
-{
-    if (rule) {
-        for (int row = 0; row < ROWS; ++row) {
-            for (int col = 0; col < COLS; ++col) {
-                next->cells[row][col] = rule(prev, row, col);
-            }
-        }
-    }
-}
-
-void random_board(Board *board, int cell_state)
+void life_random_board(Board *board, int cell_state)
 {
     for (int row = 0; row < ROWS; ++row) {
         for (int col = 0; col < COLS; ++col) {
@@ -50,61 +42,86 @@ void random_board(Board *board, int cell_state)
     }
 }
 
-Board board[2] = {0};
-int fg = 0;
+typedef Cell (*Life_Rule)(const Board *prev, int row, int col);
 
-void life_event_callback(const SDL_Event *event)
+typedef struct {
+    Square square;
+    Board boards[2];
+    int board_current;
+    Life_Rule rule;
+    int cells_count;
+    const Color *cells_color;
+} Life;
+
+void life_copy_shape_to(Board *board,
+                        int row0, int col0,
+                        int rows, int cols,
+                        const Cell shape[rows][cols])
 {
-    switch (event->type) {
-    case SDL_MOUSEBUTTONDOWN: {
-        const int col = (int) floorf(event->button.x / CELL_WIDTH);
-        const int row = (int) floorf(event->button.y / CELL_HEIGHT);
-
-        // TODO: life_event_callback assumes that there is only two kinds of cells (0 and 1)
-        board[fg].cells[row][col] = 1 - board[fg].cells[row][col];
-    }
-    break;
-
-    case SDL_KEYDOWN: {
-        if (event->key.keysym.sym == SDLK_r) {
-            memset(board[fg].cells, 0, sizeof(Cell) * ROWS * COLS);
+    for (int drow = 0; drow < rows; ++drow) {
+        for (int dcol = 0; dcol < cols; ++dcol) {
+            const int row = mod(row0 + drow, ROWS);
+            const int col = mod(col0 + dcol, COLS);
+            board->cells[row][col] = shape[drow][dcol];
         }
-    }
-    break;
     }
 }
 
-int life_event_loop(void (*init_board)(Board *board),
-                    Cell (*rule)(const Board *prev, int row, int col),
-                    void (*render_board)(const Board *board))
+void life_go(const Board *init_board,
+             Life_Rule rule,
+             int cells_count,
+             const Color cells_color[cells_count])
 {
-    if (init_board) {
-        init_board(&board[fg]);
-    }
+    Life context = {0};
 
-    atomato_begin();
+    square_begin(&context.square);
+    context.board_current = 0;
+    memcpy(&context.boards[context.board_current], init_board, sizeof(*init_board));
+    context.rule = rule;
+    context.cells_count = cells_count;
+    context.cells_color = cells_color;
 
-    while (!atomato_time_to_quit()) {
-        atomato_poll_events(life_event_callback);
-
-        if (atomato_is_next_gen()) {
-            const int bg = 1 - fg;
-            next_board(&board[fg], &board[bg], rule);
-            fg = bg;
+    while (!square_time_to_quit(&context.square)) {
+        if (context.square.cell_clicked) {
+            int const row = context.square.cell_row;
+            int const col = context.square.cell_col;
+            Board *const board = &context.boards[context.board_current];
+            board->cells[row][col] = mod(board->cells[row][col] + 1, context.cells_count);
         }
 
-        atomato_begin_rendering();
+        if (context.square.core.keyboard['r']) {
+            memset(&context.boards[context.board_current], 0, sizeof(context.boards[context.board_current]));
+
+        }
+        if (square_is_next_gen(&context.square) && context.rule) {
+            const Board *prev = &context.boards[context.board_current];
+            Board *next = &context.boards[1 - context.board_current];
+
+            for (int row = 0; row < ROWS; ++row) {
+                for (int col = 0; col < COLS; ++col) {
+                    next->cells[row][col] = context.rule(prev, row, col);
+                }
+            }
+
+            context.board_current = 1 - context.board_current;
+        }
+
+        square_begin_rendering(&context.square);
         {
-            if (render_board) {
-                render_board(&board[fg]);
+            const Board *board = &context.boards[context.board_current];
+            for (int row = 0; row < ROWS; ++row) {
+                for (int col = 0; col < COLS; ++col) {
+                    square_fill_cell(
+                        &context.square,
+                        row, col,
+                        context.cells_color[board->cells[row][col]]);
+                }
             }
         }
-        atomato_end_rendering();
+        square_end_rendering(&context.square);
     }
 
-    atomato_end();
-
-    return 0;
+    square_end(&context.square);
 }
 
 #endif // LIFE_H_

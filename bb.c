@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "atomato.h"
+#include "core.h"
 #include "life.h"
 
 #define OFF 0
@@ -16,23 +16,9 @@ Uint32 cell_color[3] = {
     [DYING] = 0xAABBFFFF,
 };
 
-void render_board(const Board *board)
-{
-    for (int row = 0; row < ROWS; ++row) {
-        for (int col = 0; col < COLS; ++col) {
-            atomato_fill_rect(
-                col * CELL_WIDTH,
-                row * CELL_HEIGHT,
-                CELL_WIDTH,
-                CELL_HEIGHT,
-                cell_color[board->cells[row][col]]);
-        }
-    }
-}
-
 Cell bb_rule(const Board *prev, int row, int col)
 {
-    const int nbors = board_nbors(prev, row, col, ON);
+    const int nbors = life_board_nbors(prev, row, col, ON);
 
     switch (prev->cells[row][col]) {
     case OFF:
@@ -46,15 +32,9 @@ Cell bb_rule(const Board *prev, int row, int col)
     }
 }
 
-void init_board(Board *board)
-{
-    random_board(board, 2);
-}
-
 int main(void)
 {
-    return life_event_loop(
-               init_board,
-               bb_rule,
-               render_board);
+    Board board = {0};
+    life_random_board(&board, 2);
+    life_go(&board, bb_rule, 3, cell_color);
 }
