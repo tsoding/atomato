@@ -6,11 +6,14 @@
 #include "core.h"
 #include "life.h"
 
-#define OFF 0
-#define ON 1
-#define DYING 2
+typedef enum {
+    OFF = 0,
+    ON,
+    DYING,
+    CELL_COUNT
+} Bb_Cell;
 
-Uint32 cell_color[3] = {
+Uint32 cell_color[CELL_COUNT] = {
     [OFF] = BACKGROUND_COLOR,
     [ON] = PINK_COLOR,
     [DYING] = BLUE_COLOR,
@@ -36,5 +39,6 @@ int main(void)
 {
     Board board = {0};
     life_random_board(&board, 2);
-    life_go(&board, bb_rule, 3, cell_color);
+    life_go(&board, bb_rule, CELL_COUNT, cell_color);
+    return 0;
 }
