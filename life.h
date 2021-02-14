@@ -7,13 +7,11 @@
 #ifndef LIFE_H_
 #define LIFE_H_
 
+#include <assert.h>
 #include <errno.h>
 #include "square.h"
 
-#define STB_IMAGE_IMPLEMENTATION
 #include "./stb_image.h"
-
-#define STB_IMAGE_WRITE_IMPLEMENTATION
 #include "./stb_image_write.h"
 
 typedef int Cell;
