@@ -6,17 +6,20 @@
 
 typedef enum {
     O = 0,
-    I = 1,
-} Cell;
+    I,
+    COUNT_CELL
+} Rule110_Cell;
 
-Uint32 cell_color[2] = {
+Uint32 cell_color[COUNT_CELL] = {
     [O] = BACKGROUND_COLOR,
     [I] = PINK_COLOR,
 };
 
+#define PATTERN_SIZE 3
+
 #define PATTERN(A, B, C) ((A << 2) | (B << 1) | C)
 
-Cell patterns[1 << 3] = {
+Rule110_Cell patterns[1 << PATTERN_SIZE] = {
     [PATTERN(O, O, O)] = O,
     [PATTERN(O, O, I)] = I,
     [PATTERN(O, I, O)] = I,
@@ -28,7 +31,7 @@ Cell patterns[1 << 3] = {
 };
 
 typedef struct {
-    Cell cells[COLS];
+    Rule110_Cell cells[COLS];
 } Row;
 
 Row next_row(Row prev)
