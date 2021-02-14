@@ -71,6 +71,8 @@ void *scp(void *ptr)
 #define DELTA_TIME_SEC (1.0f / SCREEN_FPS)
 #define DELTA_TIME_MS ((int) floorf(DELTA_TIME_SEC * 1000))
 
+typedef Uint32 Color;
+
 #define BACKGROUND_COLOR 0x181818ff
 #define FOREGROUND_COLOR 0xFFAABBFF
 #define HEX_COLOR_UNPACK(color) \

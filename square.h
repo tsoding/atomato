@@ -15,6 +15,9 @@
 
 typedef struct {
     Core core;
+    bool cell_clicked;
+    int cell_row;
+    int cell_col;
 } Square;
 
 void square_begin(Square *context)
@@ -29,7 +32,11 @@ void square_end(Square *context)
 
 bool square_time_to_quit(Square *context)
 {
-    return core_time_to_quit(&context->core);
+    bool result = core_time_to_quit(&context->core);
+    context->cell_row = context->core.mouse_y / CELL_HEIGHT;
+    context->cell_col = context->core.mouse_x / CELL_WIDTH;
+    context->cell_clicked = context->core.mouse_clicked;
+    return result;
 }
 
 bool square_is_next_gen(Square *context)
