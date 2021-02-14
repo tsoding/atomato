@@ -1,13 +1,47 @@
+// # Core
+//
 // One of the Atomato "Frameworks" that provides the core functionality:
 // - creating window
 // - organizing event loop
 // - providing rendering capabilities
 // - synchronizing next generation loop
+//
 // It does not assume any specific cellular atomaton or the grid it's living on.
+//
+// ## Usage
+//
+// ```c
+// #include "./core.h"
+//
+// int main(void)
+// {
+//     Core context = {0};
+//     core_begin(&context);
+//
+//     while (!core_time_to_quit(&context)) {
+//         if (core_is_next_gen(&context)) {
+//             // ... compute next generation ...
+//         }
+//
+//         core_begin_rendering(&context);
+//         // ... render your generation on the screen ...
+//         core_end_rendering(&context);
+//     }
+//
+//     core_end(&context);
+//     return 0;
+// }
+// ```
+//
+// ## Controls
+//
+// - SPACE - toggle pause for the "Next Gen" tick
 
 #ifndef CORE_H_
 #define CORE_H_
 
+#include <stdio.h>
+#include <stdlib.h>
 #include <stdbool.h>
 #include <SDL.h>
 
