@@ -89,9 +89,10 @@ void life_go(const Board *init_board,
             board->cells[row][col] = mod(board->cells[row][col] + 1, context.cells_count);
         }
 
-        // TODO: life framework does not clean the screen on R anymore
-        // I removed it during refactoring
+        if (context.square.core.keyboard['r']) {
+            memset(&context.boards[context.board_current], 0, sizeof(context.boards[context.board_current]));
 
+        }
         if (square_is_next_gen(&context.square) && context.rule) {
             const Board *prev = &context.boards[context.board_current];
             Board *next = &context.boards[1 - context.board_current];

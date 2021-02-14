@@ -92,6 +92,7 @@ typedef struct {
     float mouse_x;
     float mouse_y;
     bool mouse_clicked;
+    bool keyboard[256];
 } Core;
 
 void core_fill_rect(Core *context,
@@ -146,6 +147,7 @@ void core_end(Core *context)
 bool core_time_to_quit(Core *context)
 {
     context->mouse_clicked = false;
+    memset(context->keyboard, 0, sizeof(context->keyboard));
 
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -156,11 +158,16 @@ bool core_time_to_quit(Core *context)
         break;
 
         case SDL_KEYDOWN: {
-            switch (event.key.keysym.sym) {
+            int sym = event.key.keysym.sym;
+            switch (sym) {
             case SDLK_SPACE: {
                 context->pause = !context->pause;
             }
             break;
+            }
+
+            if (0 <= sym && sym < 256) {
+               context->keyboard[sym] = true;
             }
         }
         break;
