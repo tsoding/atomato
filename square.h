@@ -12,8 +12,8 @@
 
 #include "./core.h"
 
-#define ROWS 20
-#define COLS 20
+#define ROWS 600
+#define COLS 800
 #define CELL_WIDTH ((float) SCREEN_WIDTH / (float) COLS)
 #define CELL_HEIGHT ((float) SCREEN_HEIGHT / (float) ROWS)
 

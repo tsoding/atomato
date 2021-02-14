@@ -121,10 +121,10 @@ void core_fill_rect(Core *context,
                     Uint32 color)
 {
     const SDL_Rect rect = {
-        .x = (int) floorf(x),
-        .y = (int) floorf(y),
-        .w = (int) floorf(w),
-        .h = (int) floorf(h)
+        .x = (int) ceilf(x),
+        .y = (int) ceilf(y),
+        .w = (int) ceilf(w),
+        .h = (int) ceilf(h)
     };
 
     scc(SDL_SetRenderDrawColor(
