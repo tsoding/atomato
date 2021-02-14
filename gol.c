@@ -35,6 +35,7 @@ static const Cell glider[3][3] = {
 
 int main()
 {
+    // TODO: gol does not read its initial state from an image file
     Board board = {0};
     life_copy_shape_to(&board, 0, 0, 3, 3, glider);
     life_copy_shape_to(&board, 4, 4, 3, 3, glider);

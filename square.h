@@ -60,6 +60,7 @@ void square_end(Square *context)
 bool square_time_to_quit(Square *context)
 {
     bool result = core_time_to_quit(&context->core);
+    // TODO: square framework does not take into account camera when mapping clickes on cells
     context->cell_row = context->core.mouse_y / CELL_HEIGHT;
     context->cell_col = context->core.mouse_x / CELL_WIDTH;
     context->cell_clicked = context->core.mouse_clicked;

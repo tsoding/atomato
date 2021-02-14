@@ -33,6 +33,8 @@ static const Cell glider[4][2] = {
 
 int main(void)
 {
+    // TODO: seeds does not read it's initial state from an image file
+
     Board board = {0};
 
     for (int i = 0; i < 10; ++i) {

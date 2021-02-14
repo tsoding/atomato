@@ -40,6 +40,7 @@ Cell wireworld_rule(const Board *prev, int row, int col)
 
 int main(int argc, char **argv)
 {
+    // TODO: wireworld does not allow to run without a file
     if (argc < 2) {
         fprintf(stderr, "USAGE: ./wireworld <image.gif>\n");
         fprintf(stderr, "ERROR: no input is provided\n");

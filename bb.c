@@ -37,6 +37,7 @@ Cell bb_rule(const Board *prev, int row, int col)
 
 int main(void)
 {
+    // TODO: bb does not read its initial state from an image of file
     Board board = {0};
     life_random_board(&board, 2);
     life_go(&board, bb_rule, CELL_COUNT, cell_color, "bb.png");
