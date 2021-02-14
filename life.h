@@ -5,6 +5,8 @@
 #ifndef LIFE_H_
 #define LIFE_H_
 
+#include "square.h"
+
 typedef int Cell;
 
 typedef struct {

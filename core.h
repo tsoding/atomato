@@ -79,11 +79,6 @@ void *scp(void *ptr)
   ((color >> (8 * 1)) & 0xFF),  \
   ((color >> (8 * 0)) & 0xFF)
 
-#define ROWS 100
-#define COLS 100
-#define CELL_WIDTH ((float) SCREEN_WIDTH / (float) COLS)
-#define CELL_HEIGHT ((float) SCREEN_HEIGHT / (float) ROWS)
-
 #define NEXT_GEN_TIMEOUT 0.05f
 
 typedef struct {

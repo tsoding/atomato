@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "./core.h"
+#include "./square.h"
 
 typedef enum {
     O = 0,
@@ -30,19 +30,6 @@ Cell patterns[1 << 3] = {
 typedef struct {
     Cell cells[COLS];
 } Row;
-
-void render_row(Core *context, Row row, int y)
-{
-    for (int i = 0; i < COLS; ++i) {
-        core_fill_rect(
-            context,
-            i * CELL_WIDTH,
-            y,
-            CELL_WIDTH,
-            CELL_HEIGHT,
-            cell_color[row.cells[i]]);
-    }
-}
 
 Row next_row(Row prev)
 {
@@ -98,36 +85,40 @@ void board_next_row(Board *board)
     board_push_row(board, next_row(board->rows[mod(board->begin + board->size - 1, ROWS)]));
 }
 
-void board_render(Core *context, const Board *board)
+void board_render(Square *context, const Board *board)
 {
     for (int row = 0; row < board->size; ++row) {
-        render_row(context, board->rows[mod(board->begin + row, ROWS)], row * CELL_HEIGHT);
+        for (int col = 0; col < COLS; ++col) {
+            square_fill_cell(
+                context, row, col,
+                cell_color[board->rows[mod(board->begin + row, ROWS)].cells[col]]);
+        }
     }
 }
 
 int main(void)
 {
-    Core context = {0};
+    Square context = {0};
 
-    core_begin(&context);
+    square_begin(&context);
 
     board_push_row(&board, random_row());
 
-    while (!core_time_to_quit(&context)) {
+    while (!square_time_to_quit(&context)) {
         // Update State
-        if (core_is_next_gen(&context)) {
+        if (square_is_next_gen(&context)) {
             board_next_row(&board);
         }
 
         // Render State
-        core_begin_rendering(&context);
+        square_begin_rendering(&context);
         {
             board_render(&context, &board);
         }
-        core_end_rendering(&context);
+        square_end_rendering(&context);
     }
 
-    core_end(&context);
+    square_end(&context);
 
     return 0;
 }
