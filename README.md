@@ -45,6 +45,8 @@ $ ./bb
 $ ./wireworld ./images/ww800x600.gif
 ```
 
+![wireworld](./thumbnails/wireworld.png)
+
 ## [Lattice gas automaton](https://en.wikipedia.org/wiki/Lattice_gas_automaton)
 
 TBD
