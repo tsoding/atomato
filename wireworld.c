@@ -14,17 +14,6 @@ typedef enum {
 } Wireworld_Cell;
 
 Color cell_color[CELL_COUNT] = {
-    [EMPTY] = 0,
-    [HEAD] = 0xFFFFFFFF,
-    [TAIL] = 0x0080FFFF,
-    [CONDUCTOR] = 0xFF8000FF,
-};
-
-Color parse_color[CELL_COUNT] = {
-    // [EMPTY] = 0,
-    // [HEAD] = BLUE_COLOR,
-    // [TAIL] = PINK_COLOR,
-    // [CONDUCTOR] = YELLOW_COLOR
     [EMPTY] = 0xFF000000,
     [HEAD] = 0xFFFFFFFF,
     [TAIL] = 0xFFFF8000,
@@ -59,7 +48,7 @@ int main(int argc, char **argv)
 
     Board board = {0};
 
-    life_load_board_from_image(&board, argv[1], CELL_COUNT, parse_color);
+    life_load_board_from_image(&board, argv[1], CELL_COUNT, cell_color);
 
     life_go(&board,
             wireworld_rule,

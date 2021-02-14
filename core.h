@@ -77,11 +77,6 @@ void *scp(void *ptr)
 
 typedef Uint32 Color;
 
-#define HEX_COLOR_UNPACK(color) \
-  ((color >> (8 * 3)) & 0xFF),  \
-  ((color >> (8 * 2)) & 0xFF),  \
-  ((color >> (8 * 1)) & 0xFF),  \
-  ((color >> (8 * 0)) & 0xFF)
 
 #define NEXT_GEN_MIN_TIMEOUT 0.0000000005
 #define NEXT_GEN_INITIAL_TIMEOUT NEXT_GEN_MIN_TIMEOUT // 0.05f
@@ -107,7 +102,7 @@ void core_draw_line(Core *context,
 {
     scc(SDL_SetRenderDrawColor(
             context->renderer,
-            HEX_COLOR_UNPACK(color)));
+            RGBA32_UNPACK(color)));
 
     scc(SDL_RenderDrawLine(context->renderer,
                            (int) floorf(x1),
@@ -130,7 +125,7 @@ void core_fill_rect(Core *context,
 
     scc(SDL_SetRenderDrawColor(
             context->renderer,
-            HEX_COLOR_UNPACK(color)));
+            RGBA32_UNPACK(color)));
 
     scc(SDL_RenderFillRect(context->renderer, &rect));
 }
@@ -243,11 +238,9 @@ void core_begin_rendering(Core *context)
 {
     scc(SDL_SetRenderDrawColor(
             context->renderer,
-            HEX_COLOR_UNPACK(BACKGROUND_COLOR)));
+            RGBA32_UNPACK(BACKGROUND_COLOR)));
     scc(SDL_RenderClear(context->renderer));
 }
-
-#define WITH_ALPHA(color, alpha) ((color & 0xFFFFFF00) | alpha)
 
 #define PAUSE_PADDING 50.0f
 #define PAUSE_BAR_WIDTH 20.0f
