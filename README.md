@@ -21,6 +21,8 @@ $ ./rule110
 $ ./gol
 ```
 
+![gol](./thumbnails/gol.png)
+
 ## [Seeds](https://en.wikipedia.org/wiki/Seeds_(cellular_automaton))
 
 ```console
@@ -34,6 +36,8 @@ $ ./seeds
 ```console
 $ ./bb
 ```
+
+![bb](./thumbnails/bb.png)
 
 ## [Wireworld](https://en.wikipedia.org/wiki/Wireworld)
 
