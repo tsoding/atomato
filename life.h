@@ -53,27 +53,6 @@ void random_board(Board *board, int cell_state)
 Board board[2] = {0};
 int fg = 0;
 
-void life_event_callback(const SDL_Event *event)
-{
-    switch (event->type) {
-    case SDL_MOUSEBUTTONDOWN: {
-        const int col = (int) floorf(event->button.x / CELL_WIDTH);
-        const int row = (int) floorf(event->button.y / CELL_HEIGHT);
-
-        // TODO: life_event_callback assumes that there is only two kinds of cells (0 and 1)
-        board[fg].cells[row][col] = 1 - board[fg].cells[row][col];
-    }
-    break;
-
-    case SDL_KEYDOWN: {
-        if (event->key.keysym.sym == SDLK_r) {
-            memset(board[fg].cells, 0, sizeof(Cell) * ROWS * COLS);
-        }
-    }
-    break;
-    }
-}
-
 int life_event_loop(void (*init_board)(Board *board),
                     Cell (*rule)(const Board *prev, int row, int col),
                     void (*render_board)(Core *context, const Board *board))
@@ -87,7 +66,16 @@ int life_event_loop(void (*init_board)(Board *board),
     core_begin(&context);
 
     while (!core_time_to_quit(&context)) {
-        core_poll_events(&context, life_event_callback);
+        if (context.mouse_clicked) {
+            const int col = (int) floorf(context.mouse_x / CELL_WIDTH);
+            const int row = (int) floorf(context.mouse_y / CELL_HEIGHT);
+
+            // TODO: life_event_callback assumes that there is only two kinds of cells (0 and 1)
+            board[fg].cells[row][col] = 1 - board[fg].cells[row][col];
+        }
+
+        // TODO: life framework does not clean the screen on R anymore
+        // I removed it during refactoring
 
         if (core_is_next_gen(&context)) {
             const int bg = 1 - fg;

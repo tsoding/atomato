@@ -60,6 +60,7 @@ typedef struct {
     SDL_Renderer *renderer;
     float mouse_x;
     float mouse_y;
+    bool mouse_clicked;
 } Core;
 
 void core_fill_rect(Core *context,
@@ -111,8 +112,51 @@ void core_end(Core *context)
     SDL_Quit();
 }
 
-bool core_time_to_quit(const Core *context)
+bool core_time_to_quit(Core *context)
 {
+    context->mouse_clicked = false;
+
+    SDL_Event event;
+    while (SDL_PollEvent(&event)) {
+        switch(event.type) {
+        case SDL_QUIT: {
+            context->quit = true;
+        }
+        break;
+
+        case SDL_KEYDOWN: {
+            switch (event.key.keysym.sym) {
+            case SDLK_SPACE: {
+                context->pause = !context->pause;
+            }
+            break;
+            }
+        }
+        break;
+
+        case SDL_MOUSEMOTION: {
+            context->mouse_x = event.motion.x;
+            context->mouse_y = event.motion.y;
+        }
+        break;
+
+        case SDL_MOUSEBUTTONDOWN: {
+            context->mouse_clicked = true;
+            context->mouse_x = event.motion.x;
+            context->mouse_y = event.motion.y;
+        }
+        break;
+        }
+    }
+
+    if (context->next_gen_timeout <= 0.0) {
+        context->next_gen_timeout = NEXT_GEN_TIMEOUT;
+    }
+
+    if (!context->pause) {
+        context->next_gen_timeout -= DELTA_TIME_SEC;
+    }
+
     return context->quit;
 }
 
@@ -168,48 +212,6 @@ void core_end_rendering(Core *context)
 
     SDL_RenderPresent(context->renderer);
     SDL_Delay(DELTA_TIME_MS);
-}
-
-// TODO: remove core_poll_events
-void core_poll_events(Core *context, void (*callback)(const SDL_Event *event))
-{
-    SDL_Event event;
-    while (SDL_PollEvent(&event)) {
-        switch(event.type) {
-        case SDL_QUIT: {
-            context->quit = true;
-        }
-        break;
-
-        case SDL_KEYDOWN: {
-            switch (event.key.keysym.sym) {
-            case SDLK_SPACE: {
-                context->pause = !context->pause;
-            }
-            break;
-            }
-        }
-        break;
-
-        case SDL_MOUSEMOTION: {
-            context->mouse_x = event.motion.x;
-            context->mouse_y = event.motion.y;
-        }
-        break;
-        }
-
-        if (callback) {
-            callback(&event);
-        }
-    }
-
-    if (context->next_gen_timeout <= 0.0) {
-        context->next_gen_timeout = NEXT_GEN_TIMEOUT;
-    }
-
-    if (!context->pause) {
-        context->next_gen_timeout -= DELTA_TIME_SEC;
-    }
 }
 
 bool core_is_next_gen(Core *context)

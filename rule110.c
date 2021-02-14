@@ -114,9 +114,6 @@ int main(void)
     board_push_row(&board, random_row());
 
     while (!core_time_to_quit(&context)) {
-        // Handle Inputs
-        core_poll_events(&context, NULL);
-
         // Update State
         if (core_is_next_gen(&context)) {
             board_next_row(&board);
