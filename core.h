@@ -36,6 +36,8 @@
 // ## Controls
 //
 // - SPACE - toggle pause for the "Next Gen" tick
+// - X - speed up the gen tick
+// - Z - slow down the gen tick
 
 #ifndef CORE_H_
 #define CORE_H_
@@ -81,11 +83,13 @@ typedef Uint32 Color;
   ((color >> (8 * 1)) & 0xFF),  \
   ((color >> (8 * 0)) & 0xFF)
 
-#define NEXT_GEN_TIMEOUT 0.05f
+#define NEXT_GEN_MIN_TIMEOUT 0.005
+#define NEXT_GEN_INITIAL_TIMEOUT 0.05f
 
 typedef struct {
     bool quit;
     bool pause;
+    float next_gen_cooldown;
     float next_gen_timeout;
     SDL_Window *window;
     SDL_Renderer *renderer;
@@ -134,6 +138,8 @@ void core_begin(Core *context)
 {
     scc(SDL_Init(SDL_INIT_VIDEO));
 
+    context->next_gen_timeout = NEXT_GEN_INITIAL_TIMEOUT;
+
     context->window = scp(SDL_CreateWindow(
                               "Core",
                               0, 0,
@@ -180,6 +186,19 @@ bool core_time_to_quit(Core *context)
                 context->pause = !context->pause;
             }
             break;
+
+            case SDLK_x: {
+                context->next_gen_timeout = fmaxf(context->next_gen_timeout / 1.5,
+                                                  NEXT_GEN_MIN_TIMEOUT);
+                context->next_gen_cooldown = context->next_gen_timeout;
+            }
+            break;
+
+            case SDLK_z: {
+                context->next_gen_timeout = context->next_gen_timeout * 1.5;
+                context->next_gen_cooldown = context->next_gen_timeout;
+            }
+            break;
             }
 
             if (0 <= sym && sym < 256) {
@@ -203,12 +222,12 @@ bool core_time_to_quit(Core *context)
         }
     }
 
-    if (context->next_gen_timeout <= 0.0) {
-        context->next_gen_timeout = NEXT_GEN_TIMEOUT;
+    if (context->next_gen_cooldown <= 0.0) {
+        context->next_gen_cooldown = context->next_gen_timeout;
     }
 
     if (!context->pause) {
-        context->next_gen_timeout -= DELTA_TIME_SEC;
+        context->next_gen_cooldown -= DELTA_TIME_SEC;
     }
 
     return context->quit;
@@ -270,7 +289,7 @@ void core_end_rendering(Core *context)
 
 bool core_is_next_gen(Core *context)
 {
-    return context->next_gen_timeout <= 0.0f;
+    return context->next_gen_cooldown <= 0.0f;
 }
 
 int mod(int a, int b)
