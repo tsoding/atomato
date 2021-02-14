@@ -43,5 +43,5 @@ int main(void)
             glider);
     }
 
-    life_go(&board, seeds_rule, CELL_COUNT, cell_color);
+    life_go(&board, seeds_rule, CELL_COUNT, cell_color, "seeds.png");
 }

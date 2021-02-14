@@ -40,7 +40,7 @@ int main()
     life_copy_shape_to(&board, 4, 4, 3, 3, glider);
     life_copy_shape_to(&board, 8, 8, 3, 3, glider);
 
-    life_go(&board, gol_rule, CELL_COUNT, cell_color);
+    life_go(&board, gol_rule, CELL_COUNT, cell_color, "gol.png");
 
     return 0;
 }

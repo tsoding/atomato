@@ -7,7 +7,14 @@
 #ifndef LIFE_H_
 #define LIFE_H_
 
+#include <errno.h>
 #include "square.h"
+
+#define STB_IMAGE_IMPLEMENTATION
+#include "./stb_image.h"
+
+#define STB_IMAGE_WRITE_IMPLEMENTATION
+#include "./stb_image_write.h"
 
 typedef int Cell;
 
@@ -67,10 +74,67 @@ void life_copy_shape_to(Board *board,
     }
 }
 
+void life_save_board_to_image(const Board *board, const char *file_path,
+                              int cells_count,
+                              const Color cells_color[cells_count])
+{
+    static uint32_t data[ROWS][COLS] = {0};
+
+    for (int row = 0; row < ROWS; ++row) {
+        for (int col = 0; col < COLS; ++col) {
+            data[row][col] = cells_color[board->cells[row][col]];
+        }
+    }
+
+    if (!stbi_write_png(file_path, COLS, ROWS, 4, data, COLS * 4)) {
+        fprintf(stderr, "ERROR: could not save to file %s: %s",
+                file_path, strerror(errno));
+        exit(1);
+    }
+}
+
+void life_load_board_from_image(Board *board, const char *file_path,
+                                int cells_count,
+                                const Color cells_color[cells_count])
+{
+    int w = 0, h = 0, n = 0;
+    uint32_t *data = (uint32_t *) stbi_load(file_path, &w, &h, &n, 0);
+
+    if (data == NULL) {
+        fprintf(stderr, "ERROR: could not read file %s: %s",
+                file_path, strerror(errno));
+        exit(1);
+    }
+
+    assert(n == 4);
+    assert(COLS >= w);
+    assert(ROWS >= h);
+
+    for (int row = 0; row < ROWS; ++row) {
+        for (int col = 0; col < COLS; ++col) {
+            const Color color = data[row * w + col];
+
+            bool found = false;
+            for (Cell cell = 0; !found && cell < cells_count; ++cell) {
+                if (cells_color[cell] == color) {
+                    board->cells[row][col] = cell;
+                    found = true;
+                }
+            }
+
+            if (!found) {
+                fprintf(stderr, "%s: Unknown color 0x%08X\n", file_path, color);
+                exit(1);
+            }
+        }
+    }
+}
+
 void life_go(const Board *init_board,
              Life_Rule rule,
              int cells_count,
-             const Color cells_color[cells_count])
+             const Color cells_color[cells_count],
+             const char *save_file_path)
 {
     Life context = {0};
 
@@ -93,12 +157,22 @@ void life_go(const Board *init_board,
             memset(&context.boards[context.board_current], 0, sizeof(context.boards[context.board_current]));
 
         }
+
+        if (context.square.core.keyboard['s']) {
+            life_save_board_to_image(
+                &context.boards[context.board_current],
+                save_file_path,
+                context.cells_count,
+                context.cells_color);
+        }
+
         if (square_is_next_gen(&context.square) && context.rule) {
             const Board *prev = &context.boards[context.board_current];
             Board *next = &context.boards[1 - context.board_current];
 
             // TODO: speedup simulation
             // Ideas:
+            // - [ ] -O3
             // - [ ] Several states per tick
             // - [ ] Parallelization
             for (int row = 0; row < ROWS; ++row) {

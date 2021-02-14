@@ -39,6 +39,6 @@ int main(void)
 {
     Board board = {0};
     life_random_board(&board, 2);
-    life_go(&board, bb_rule, CELL_COUNT, cell_color);
+    life_go(&board, bb_rule, CELL_COUNT, cell_color, "bb.png");
     return 0;
 }
