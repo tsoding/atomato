@@ -42,6 +42,10 @@ void square_begin(Square *context)
                 SDL_TEXTUREACCESS_STREAMING,
                 COLS,
                 ROWS));
+
+    scc(SDL_SetTextureBlendMode(context->board_texture,
+                                SDL_BLENDMODE_BLEND));
+
     context->camera_scale = 1.0;
     context->camera_x = 0;
     context->camera_y = 0;
