@@ -147,6 +147,7 @@ void core_begin(Core *context)
                                -1,
                                SDL_RENDERER_ACCELERATED));
 
+    // TODO: logical size cuts of the texture of square framework
     scc(SDL_RenderSetLogicalSize(context->renderer,
                                  SCREEN_WIDTH,
                                  SCREEN_HEIGHT));

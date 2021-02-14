@@ -12,6 +12,7 @@
 
 #include "./core.h"
 
+// TODO: settings size of the board at runtime
 #define ROWS 600
 #define COLS 800
 #define CELL_WIDTH ((float) SCREEN_WIDTH / (float) COLS)
@@ -67,6 +68,7 @@ bool square_time_to_quit(Square *context)
     context->cell_col = context->core.mouse_x / CELL_WIDTH;
     context->cell_clicked = context->core.mouse_clicked;
 
+    // TODO: camera should be controled by the mouse
     if (context->core.keyboard['g']) {
         context->grid = !context->grid;
     }
