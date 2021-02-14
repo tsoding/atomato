@@ -14,7 +14,7 @@ typedef enum {
 } Bb_Cell;
 
 Uint32 cell_color[CELL_COUNT] = {
-    [OFF] = BACKGROUND_COLOR,
+    [OFF] = 0,
     [ON] = PINK_COLOR,
     [DYING] = BLUE_COLOR,
 };

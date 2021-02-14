@@ -9,7 +9,7 @@ typedef enum {
 } Gol_Cell;
 
 Color cell_color[CELL_COUNT] = {
-    [DED] = BACKGROUND_COLOR,
+    [DED] = 0,
     [ALIVE] = PINK_COLOR
 };
 

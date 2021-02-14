@@ -12,7 +12,7 @@ typedef enum {
 } Wireworld_Cell;
 
 Color cell_color[CELL_COUNT] = {
-    [EMPTY] = BACKGROUND_COLOR,
+    [EMPTY] = 0,
     [HEAD] = BLUE_COLOR,
     [TAIL] = PINK_COLOR,
     [CONDUCTOR] = YELLOW_COLOR

@@ -11,7 +11,7 @@ typedef enum {
 } Rule110_Cell;
 
 Uint32 cell_color[COUNT_CELL] = {
-    [O] = BACKGROUND_COLOR,
+    [O] = 0,
     [I] = PINK_COLOR,
 };
 

@@ -10,7 +10,7 @@ typedef enum {
 } Seeds_Cell;
 
 Color cell_color[CELL_COUNT] = {
-    [OFF] = BACKGROUND_COLOR,
+    [OFF] = 0,
     [ON] = PINK_COLOR
 };
 
