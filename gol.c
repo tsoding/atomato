@@ -1,12 +1,14 @@
 #include <assert.h>
 #include <stdbool.h>
-#include "./core.h"
 #include "./life.h"
 
-#define DED 0
-#define ALIVE 1
+typedef enum {
+    DED = 0,
+    ALIVE,
+    CELL_COUNT
+} Gol_Cell;
 
-Uint32 cell_color[2] = {
+Color cell_color[CELL_COUNT] = {
     [DED] = BACKGROUND_COLOR,
     [ALIVE] = PINK_COLOR
 };
@@ -38,7 +40,7 @@ int main()
     life_copy_shape_to(&board, 4, 4, 3, 3, glider);
     life_copy_shape_to(&board, 8, 8, 3, 3, glider);
 
-    life_go(&board, gol_rule, 2, cell_color);
+    life_go(&board, gol_rule, CELL_COUNT, cell_color);
 
     return 0;
 }
