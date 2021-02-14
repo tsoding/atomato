@@ -95,6 +95,22 @@ typedef struct {
     bool keyboard[256];
 } Core;
 
+void core_draw_line(Core *context,
+                    float x1, float y1,
+                    float x2, float y2,
+                    Color color)
+{
+    scc(SDL_SetRenderDrawColor(
+            context->renderer,
+            HEX_COLOR_UNPACK(color)));
+
+    scc(SDL_RenderDrawLine(context->renderer,
+                           (int) floorf(x1),
+                           (int) floorf(y1),
+                           (int) floorf(x2),
+                           (int) floorf(y2)));
+}
+
 void core_fill_rect(Core *context,
                     float x, float y,
                     float w, float h,
@@ -167,7 +183,7 @@ bool core_time_to_quit(Core *context)
             }
 
             if (0 <= sym && sym < 256) {
-               context->keyboard[sym] = true;
+                context->keyboard[sym] = true;
             }
         }
         break;
