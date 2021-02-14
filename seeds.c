@@ -3,10 +3,13 @@
 #include "./core.h"
 #include "./life.h"
 
-#define OFF 0
-#define ON 1
+typedef enum {
+    OFF = 0,
+    ON,
+    CELL_COUNT
+} Seeds_Cell;
 
-Uint32 cell_color[2] = {
+Color cell_color[CELL_COUNT] = {
     [OFF] = BACKGROUND_COLOR,
     [ON] = PINK_COLOR
 };
@@ -40,5 +43,5 @@ int main(void)
             glider);
     }
 
-    life_go(&board, seeds_rule, 2, cell_color);
+    life_go(&board, seeds_rule, CELL_COUNT, cell_color);
 }
