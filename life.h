@@ -173,12 +173,6 @@ void life_go(const Board *init_board,
                 const Board *prev = &context.boards[context.board_current];
                 Board *next = &context.boards[1 - context.board_current];
 
-                // TODO: speedup simulation
-                // Ideas:
-                // - [x] -O3
-                // - [x] Several states per tick
-                // - [ ] Don't redraw cells that didn't change
-                // - [ ] Parallelization
                 for (int row = 0; row < ROWS; ++row) {
                     for (int col = 0; col < COLS; ++col) {
                         next->cells[row][col] = context.rule(prev, row, col);
