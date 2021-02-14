@@ -26,6 +26,9 @@ typedef struct {
     SDL_Texture *board_texture;
     void *board_pixels;
     int board_pitch;
+    float camera_scale;
+    float camera_x;
+    float camera_y;
 } Square;
 
 void square_begin(Square *context)
@@ -39,6 +42,9 @@ void square_begin(Square *context)
                 SDL_TEXTUREACCESS_STREAMING,
                 COLS,
                 ROWS));
+    context->camera_scale = 1.0;
+    context->camera_x = 0;
+    context->camera_y = 0;
 }
 
 void square_end(Square *context)
@@ -56,6 +62,36 @@ bool square_time_to_quit(Square *context)
 
     if (context->core.keyboard['g']) {
         context->grid = !context->grid;
+    }
+
+    if (context->core.keyboard['=']) {
+        context->camera_scale = context->camera_scale * 1.1;
+    }
+
+    if (context->core.keyboard['-']) {
+        context->camera_scale = fmaxf(context->camera_scale / 1.1, 0.005);
+    }
+
+    if (context->core.keyboard['i']) {
+        context->camera_y += 10.0 * context->camera_scale;
+    }
+
+    if (context->core.keyboard['k']) {
+        context->camera_y -= 10.0 * context->camera_scale;
+    }
+
+    if (context->core.keyboard['j']) {
+        context->camera_x += 10.0 * context->camera_scale;
+    }
+
+    if (context->core.keyboard['l']) {
+        context->camera_x -= 10.0 * context->camera_scale;
+    }
+
+    if (context->core.keyboard['0']) {
+        context->camera_x = 0.0;
+        context->camera_y = 0.0;
+        context->camera_scale = 1.0;
     }
 
     return result;
@@ -99,8 +135,18 @@ void square_end_rendering(Square *context)
 {
     SDL_UnlockTexture(context->board_texture);
 
+    const float w = SCREEN_WIDTH * context->camera_scale;
+    const float h = SCREEN_HEIGHT * context->camera_scale;
+    const float x = SCREEN_WIDTH * 0.5 - w * 0.5 + context->camera_x;
+    const float y = SCREEN_HEIGHT * 0.5 - h * 0.5 + context->camera_y;
+
     const SDL_Rect srcrect = {0, 0, COLS, ROWS};
-    const SDL_Rect dstrect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+    const SDL_Rect dstrect = {
+        (int) floorf(x),
+        (int) floorf(y),
+        (int) floorf(w),
+        (int) floorf(h)
+    };
 
     scc(SDL_RenderCopy(context->core.renderer,
                        context->board_texture,
