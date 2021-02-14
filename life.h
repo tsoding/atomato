@@ -166,22 +166,27 @@ void life_go(const Board *init_board,
                 context.cells_color);
         }
 
-        if (square_is_next_gen(&context.square) && context.rule) {
-            const Board *prev = &context.boards[context.board_current];
-            Board *next = &context.boards[1 - context.board_current];
+        if (context.rule) {
+            const size_t count = square_next_gen_count(&context.square);
 
-            // TODO: speedup simulation
-            // Ideas:
-            // - [ ] -O3
-            // - [ ] Several states per tick
-            // - [ ] Parallelization
-            for (int row = 0; row < ROWS; ++row) {
-                for (int col = 0; col < COLS; ++col) {
-                    next->cells[row][col] = context.rule(prev, row, col);
+            for (size_t i = 0; i < count; ++i) {
+                const Board *prev = &context.boards[context.board_current];
+                Board *next = &context.boards[1 - context.board_current];
+
+                // TODO: speedup simulation
+                // Ideas:
+                // - [x] -O3
+                // - [x] Several states per tick
+                // - [ ] Don't redraw cells that didn't change
+                // - [ ] Parallelization
+                for (int row = 0; row < ROWS; ++row) {
+                    for (int col = 0; col < COLS; ++col) {
+                        next->cells[row][col] = context.rule(prev, row, col);
+                    }
                 }
-            }
 
-            context.board_current = 1 - context.board_current;
+                context.board_current = 1 - context.board_current;
+            }
         }
 
         square_begin_rendering(&context.square);

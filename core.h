@@ -83,14 +83,15 @@ typedef Uint32 Color;
   ((color >> (8 * 1)) & 0xFF),  \
   ((color >> (8 * 0)) & 0xFF)
 
-#define NEXT_GEN_MIN_TIMEOUT 0.005
-#define NEXT_GEN_INITIAL_TIMEOUT 0.05f
+#define NEXT_GEN_MIN_TIMEOUT 0.0000000005
+#define NEXT_GEN_INITIAL_TIMEOUT NEXT_GEN_MIN_TIMEOUT // 0.05f
 
 typedef struct {
     bool quit;
     bool pause;
     float next_gen_cooldown;
     float next_gen_timeout;
+    size_t next_gen_count;
     SDL_Window *window;
     SDL_Renderer *renderer;
     float mouse_x;
@@ -222,12 +223,17 @@ bool core_time_to_quit(Core *context)
         }
     }
 
-    if (context->next_gen_cooldown <= 0.0) {
-        context->next_gen_cooldown = context->next_gen_timeout;
-    }
-
     if (!context->pause) {
-        context->next_gen_cooldown -= DELTA_TIME_SEC;
+        if (context->next_gen_timeout >= DELTA_TIME_SEC) {
+            context->next_gen_cooldown -= DELTA_TIME_SEC;
+
+            if (context->next_gen_cooldown <= 0.0) {
+                context->next_gen_cooldown = context->next_gen_timeout;
+                context->next_gen_count += 1;
+            }
+        } else {
+            context->next_gen_count += (size_t) floorf(DELTA_TIME_SEC / context->next_gen_timeout);
+        }
     }
 
     return context->quit;
@@ -287,9 +293,11 @@ void core_end_rendering(Core *context)
     SDL_Delay(DELTA_TIME_MS);
 }
 
-bool core_is_next_gen(Core *context)
+size_t core_next_gen_count(Core *context)
 {
-    return context->next_gen_cooldown <= 0.0f;
+    size_t result = context->next_gen_count;
+    context->next_gen_count = 0;
+    return result;
 }
 
 int mod(int a, int b)

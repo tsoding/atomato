@@ -23,15 +23,27 @@ typedef struct {
     int cell_row;
     int cell_col;
     bool grid;
+    SDL_Texture *board_texture;
+    void *board_pixels;
+    int board_pitch;
 } Square;
 
 void square_begin(Square *context)
 {
     core_begin(&context->core);
+
+    context->board_texture =
+        scp(SDL_CreateTexture(
+                context->core.renderer,
+                SDL_PIXELFORMAT_RGBA32,
+                SDL_TEXTUREACCESS_STREAMING,
+                COLS,
+                ROWS));
 }
 
 void square_end(Square *context)
 {
+    SDL_DestroyTexture(context->board_texture);
     core_end(&context->core);
 }
 
@@ -49,9 +61,9 @@ bool square_time_to_quit(Square *context)
     return result;
 }
 
-bool square_is_next_gen(Square *context)
+bool square_next_gen_count(Square *context)
 {
-    return core_is_next_gen(&context->core);
+    return core_next_gen_count(&context->core);
 }
 
 void square_begin_rendering(Square *context)
@@ -75,10 +87,26 @@ void square_begin_rendering(Square *context)
                 GRID_COLOR);
         }
     }
+
+    scc(SDL_LockTexture(
+            context->board_texture,
+            NULL,
+            &context->board_pixels,
+            &context->board_pitch));
 }
 
 void square_end_rendering(Square *context)
 {
+    SDL_UnlockTexture(context->board_texture);
+
+    const SDL_Rect srcrect = {0, 0, COLS, ROWS};
+    const SDL_Rect dstrect = {0, 0, SCREEN_WIDTH, SCREEN_HEIGHT};
+
+    scc(SDL_RenderCopy(context->core.renderer,
+                       context->board_texture,
+                       &srcrect,
+                       &dstrect));
+
     core_end_rendering(&context->core);
 }
 
@@ -86,13 +114,8 @@ void square_fill_cell(Square *context,
                       int row, int col,
                       Uint32 color)
 {
-    core_fill_rect(
-        &context->core,
-        col * CELL_WIDTH,
-        row * CELL_HEIGHT,
-        CELL_WIDTH,
-        CELL_HEIGHT,
-        color);
+    Uint8 *pixels = context->board_pixels;
+    *((Uint32 *)&pixels[row * context->board_pitch + col * 4]) = color;
 }
 
 #endif  // SQUARE_H_

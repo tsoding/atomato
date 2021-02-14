@@ -109,7 +109,8 @@ int main(void)
 
     while (!square_time_to_quit(&context)) {
         // Update State
-        if (square_is_next_gen(&context)) {
+        const size_t count = square_next_gen_count(&context);
+        for (size_t i = 0; i < count; ++i) {
             board_next_row(&board);
         }
 
