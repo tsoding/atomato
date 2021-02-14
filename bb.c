@@ -3,7 +3,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#include "atomato.h"
+#include "core.h"
 #include "life.h"
 
 #define OFF 0
@@ -16,11 +16,11 @@ Uint32 cell_color[3] = {
     [DYING] = 0xAABBFFFF,
 };
 
-void render_board(Atomato *context, const Board *board)
+void render_board(Core *context, const Board *board)
 {
     for (int row = 0; row < ROWS; ++row) {
         for (int col = 0; col < COLS; ++col) {
-            atomato_fill_rect(
+            core_fill_rect(
                 context,
                 col * CELL_WIDTH,
                 row * CELL_HEIGHT,

@@ -1,5 +1,12 @@
-#ifndef ATOMATO_H_
-#define ATOMATO_H_
+// One of the Atomato "Frameworks" that provides the core functionality:
+// - creating window
+// - organizing event loop
+// - providing rendering capabilities
+// - synchronizing next generation loop
+// It does not assume any specific cellular atomaton or the grid it's living on.
+
+#ifndef CORE_H_
+#define CORE_H_
 
 #include <stdbool.h>
 #include <SDL.h>
@@ -53,12 +60,12 @@ typedef struct {
     SDL_Renderer *renderer;
     float mouse_x;
     float mouse_y;
-} Atomato;
+} Core;
 
-void atomato_fill_rect(Atomato *context,
-                       float x, float y,
-                       float w, float h,
-                       Uint32 color)
+void core_fill_rect(Core *context,
+                    float x, float y,
+                    float w, float h,
+                    Uint32 color)
 {
     const SDL_Rect rect = {
         .x = (int) floorf(x),
@@ -74,12 +81,12 @@ void atomato_fill_rect(Atomato *context,
     scc(SDL_RenderFillRect(context->renderer, &rect));
 }
 
-void atomato_begin(Atomato *context)
+void core_begin(Core *context)
 {
     scc(SDL_Init(SDL_INIT_VIDEO));
 
     context->window = scp(SDL_CreateWindow(
-                              "Atomato",
+                              "Core",
                               0, 0,
                               SCREEN_WIDTH, SCREEN_HEIGHT,
                               SDL_WINDOW_RESIZABLE));
@@ -98,18 +105,18 @@ void atomato_begin(Atomato *context)
             SDL_BLENDMODE_BLEND));
 }
 
-void atomato_end(Atomato *context)
+void core_end(Core *context)
 {
     (void) context;
     SDL_Quit();
 }
 
-bool atomato_time_to_quit(const Atomato *context)
+bool core_time_to_quit(const Core *context)
 {
     return context->quit;
 }
 
-void atomato_begin_rendering(Atomato *context)
+void core_begin_rendering(Core *context)
 {
     scc(SDL_SetRenderDrawColor(
             context->renderer,
@@ -127,7 +134,7 @@ void atomato_begin_rendering(Atomato *context)
 #define PAUSE_WIDTH (2.0f * PAUSE_BAR_WIDTH + PAUSE_BAR_GAP)
 #define PAUSE_HEIGHT PAUSE_BAR_HEIGHT
 
-void atomato_draw_pause_symbol(Atomato *context, float x, float y)
+void core_draw_pause_symbol(Core *context, float x, float y)
 {
     Uint32 color = PAUSE_BAR_COLOR;
 
@@ -138,14 +145,14 @@ void atomato_draw_pause_symbol(Atomato *context, float x, float y)
         color = WITH_ALPHA(color, 150);
     }
 
-    atomato_fill_rect(
+    core_fill_rect(
         context,
         x, y,
         PAUSE_BAR_WIDTH,
         PAUSE_BAR_HEIGHT,
         color);
 
-    atomato_fill_rect(
+    core_fill_rect(
         context,
         x + PAUSE_BAR_GAP + PAUSE_BAR_WIDTH, y,
         PAUSE_BAR_WIDTH,
@@ -153,18 +160,18 @@ void atomato_draw_pause_symbol(Atomato *context, float x, float y)
         color);
 }
 
-void atomato_end_rendering(Atomato *context)
+void core_end_rendering(Core *context)
 {
     if (context->pause) {
-        atomato_draw_pause_symbol(context, PAUSE_PADDING, PAUSE_PADDING);
+        core_draw_pause_symbol(context, PAUSE_PADDING, PAUSE_PADDING);
     }
 
     SDL_RenderPresent(context->renderer);
     SDL_Delay(DELTA_TIME_MS);
 }
 
-// TODO: remove atomato_poll_events
-void atomato_poll_events(Atomato *context, void (*callback)(const SDL_Event *event))
+// TODO: remove core_poll_events
+void core_poll_events(Core *context, void (*callback)(const SDL_Event *event))
 {
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
@@ -205,7 +212,7 @@ void atomato_poll_events(Atomato *context, void (*callback)(const SDL_Event *eve
     }
 }
 
-bool atomato_is_next_gen(Atomato *context)
+bool core_is_next_gen(Core *context)
 {
     return context->next_gen_timeout <= 0.0f;
 }
@@ -215,4 +222,4 @@ int mod(int a, int b)
     return (a % b + b) % b;
 }
 
-#endif  // ATOMATO_H_
+#endif  // CORE_H_

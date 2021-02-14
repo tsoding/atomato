@@ -76,35 +76,35 @@ void life_event_callback(const SDL_Event *event)
 
 int life_event_loop(void (*init_board)(Board *board),
                     Cell (*rule)(const Board *prev, int row, int col),
-                    void (*render_board)(Atomato *context, const Board *board))
+                    void (*render_board)(Core *context, const Board *board))
 {
-    Atomato context = {0};
+    Core context = {0};
 
     if (init_board) {
         init_board(&board[fg]);
     }
 
-    atomato_begin(&context);
+    core_begin(&context);
 
-    while (!atomato_time_to_quit(&context)) {
-        atomato_poll_events(&context, life_event_callback);
+    while (!core_time_to_quit(&context)) {
+        core_poll_events(&context, life_event_callback);
 
-        if (atomato_is_next_gen(&context)) {
+        if (core_is_next_gen(&context)) {
             const int bg = 1 - fg;
             next_board(&board[fg], &board[bg], rule);
             fg = bg;
         }
 
-        atomato_begin_rendering(&context);
+        core_begin_rendering(&context);
         {
             if (render_board) {
                 render_board(&context, &board[fg]);
             }
         }
-        atomato_end_rendering(&context);
+        core_end_rendering(&context);
     }
 
-    atomato_end(&context);
+    core_end(&context);
 
     return 0;
 }

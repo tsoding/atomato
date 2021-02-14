@@ -2,7 +2,7 @@
 #include <stdlib.h>
 #include <stdbool.h>
 
-#include "./atomato.h"
+#include "./core.h"
 
 typedef enum {
     O = 0,
@@ -31,10 +31,10 @@ typedef struct {
     Cell cells[COLS];
 } Row;
 
-void render_row(Atomato *context, Row row, int y)
+void render_row(Core *context, Row row, int y)
 {
     for (int i = 0; i < COLS; ++i) {
-        atomato_fill_rect(
+        core_fill_rect(
             context,
             i * CELL_WIDTH,
             y,
@@ -98,7 +98,7 @@ void board_next_row(Board *board)
     board_push_row(board, next_row(board->rows[mod(board->begin + board->size - 1, ROWS)]));
 }
 
-void board_render(Atomato *context, const Board *board)
+void board_render(Core *context, const Board *board)
 {
     for (int row = 0; row < board->size; ++row) {
         render_row(context, board->rows[mod(board->begin + row, ROWS)], row * CELL_HEIGHT);
@@ -107,32 +107,30 @@ void board_render(Atomato *context, const Board *board)
 
 int main(void)
 {
-    Atomato context = {0};
+    Core context = {0};
 
-    atomato_begin(&context);
+    core_begin(&context);
 
     board_push_row(&board, random_row());
 
-    while (!atomato_time_to_quit(&context)) {
+    while (!core_time_to_quit(&context)) {
         // Handle Inputs
-        atomato_poll_events(&context, NULL);
+        core_poll_events(&context, NULL);
 
         // Update State
-        if (atomato_is_next_gen(&context)) {
+        if (core_is_next_gen(&context)) {
             board_next_row(&board);
         }
 
         // Render State
-        atomato_begin_rendering(&context);
+        core_begin_rendering(&context);
         {
             board_render(&context, &board);
         }
-        atomato_end_rendering(&context);
+        core_end_rendering(&context);
     }
 
-    // TODO: pause on space
-
-    atomato_end(&context);
+    core_end(&context);
 
     return 0;
 }
