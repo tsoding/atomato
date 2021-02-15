@@ -91,6 +91,10 @@ typedef struct {
     SDL_Renderer *renderer;
     float mouse_x;
     float mouse_y;
+    float prev_mouse_x;
+    float prev_mouse_y;
+    Sint32 mouse_wheel_y;
+    bool mouse_pressed;
     bool mouse_clicked;
     bool keyboard[256];
 } Core;
@@ -168,6 +172,11 @@ bool core_time_to_quit(Core *context)
     context->mouse_clicked = false;
     memset(context->keyboard, 0, sizeof(context->keyboard));
 
+    context->prev_mouse_x = context->mouse_x;
+    context->prev_mouse_y = context->mouse_y;
+
+    context->mouse_wheel_y = 0;
+
     SDL_Event event;
     while (SDL_PollEvent(&event)) {
         switch(event.type) {
@@ -211,9 +220,22 @@ bool core_time_to_quit(Core *context)
         break;
 
         case SDL_MOUSEBUTTONDOWN: {
-            context->mouse_clicked = true;
+            context->mouse_pressed = true;
             context->mouse_x = event.motion.x;
             context->mouse_y = event.motion.y;
+        }
+        break;
+
+        case SDL_MOUSEBUTTONUP: {
+            context->mouse_clicked = true;
+            context->mouse_pressed = false;
+            context->mouse_x = event.motion.x;
+            context->mouse_y = event.motion.y;
+        }
+        break;
+
+        case SDL_MOUSEWHEEL: {
+            context->mouse_wheel_y += event.wheel.y;
         }
         break;
         }
