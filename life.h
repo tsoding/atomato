@@ -145,10 +145,14 @@ void life_go(const Board *init_board,
 
     while (!square_time_to_quit(&context.square)) {
         if (context.square.cell_clicked) {
+            Board *const board = &context.boards[context.board_current];
             int const row = context.square.cell_row;
             int const col = context.square.cell_col;
-            Board *const board = &context.boards[context.board_current];
-            board->cells[row][col] = mod(board->cells[row][col] + 1, context.cells_count);
+            if (0 <= row && row < ROWS && 0 <= col && col < COLS) {
+                board->cells[row][col] =
+                    mod(board->cells[row][col] + 1,
+                        context.cells_count);
+            }
         }
 
         if (context.square.core.keyboard['r']) {

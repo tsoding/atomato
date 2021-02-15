@@ -49,6 +49,48 @@
 
 #include "./style.h"
 
+typedef struct {
+    float x, y;
+} V2;
+
+V2 v2(float x, float y)
+{
+    return (V2) {
+        x, y
+    };
+}
+
+V2 v2_add(V2 a, V2 b)
+{
+    return (V2) {
+        a.x + b.x, a.y + b.y
+    };
+}
+
+V2 v2_sub(V2 a, V2 b)
+{
+    return (V2) {
+        a.x - b.x, a.y - b.y
+    };
+}
+
+V2 v2_scale(V2 a, float s)
+{
+    return (V2) {
+        a.x * s, a.y * s
+    };
+}
+
+float v2_len(V2 a)
+{
+    return sqrtf(a.x * a.x + a.y * a.y);
+}
+
+float v2_dist(V2 a, V2 b)
+{
+    return v2_len(v2_sub(b, a));
+}
+
 int scc(int code)
 {
     if (code < 0) {
@@ -80,6 +122,7 @@ typedef Uint32 Color;
 
 #define NEXT_GEN_MIN_TIMEOUT 0.0000000005
 #define NEXT_GEN_INITIAL_TIMEOUT NEXT_GEN_MIN_TIMEOUT // 0.05f
+#define CLICK_THRESHOLD_DISTANCE 10.0f
 
 typedef struct {
     bool quit;
@@ -89,10 +132,9 @@ typedef struct {
     size_t next_gen_count;
     SDL_Window *window;
     SDL_Renderer *renderer;
-    float mouse_x;
-    float mouse_y;
-    float prev_mouse_x;
-    float prev_mouse_y;
+    V2 mouse;
+    V2 prev_mouse;
+    V2 drag_mouse;
     Sint32 mouse_wheel_y;
     bool mouse_pressed;
     bool mouse_clicked;
@@ -172,8 +214,7 @@ bool core_time_to_quit(Core *context)
     context->mouse_clicked = false;
     memset(context->keyboard, 0, sizeof(context->keyboard));
 
-    context->prev_mouse_x = context->mouse_x;
-    context->prev_mouse_y = context->mouse_y;
+    context->prev_mouse = context->mouse;
 
     context->mouse_wheel_y = 0;
 
@@ -214,23 +255,24 @@ bool core_time_to_quit(Core *context)
         break;
 
         case SDL_MOUSEMOTION: {
-            context->mouse_x = event.motion.x;
-            context->mouse_y = event.motion.y;
+            context->mouse.x = event.motion.x;
+            context->mouse.y = event.motion.y;
         }
         break;
 
         case SDL_MOUSEBUTTONDOWN: {
             context->mouse_pressed = true;
-            context->mouse_x = event.motion.x;
-            context->mouse_y = event.motion.y;
+            context->mouse.x = event.motion.x;
+            context->mouse.y = event.motion.y;
+            context->drag_mouse = context->mouse;
         }
         break;
 
         case SDL_MOUSEBUTTONUP: {
-            context->mouse_clicked = true;
             context->mouse_pressed = false;
-            context->mouse_x = event.motion.x;
-            context->mouse_y = event.motion.y;
+            context->mouse.x = event.motion.x;
+            context->mouse.y = event.motion.y;
+            context->mouse_clicked = v2_dist(context->drag_mouse, context->mouse) < CLICK_THRESHOLD_DISTANCE;
         }
         break;
 
@@ -277,10 +319,10 @@ void core_draw_pause_symbol(Core *context, float x, float y)
 {
     Uint32 color = PAUSE_BAR_COLOR;
 
-    if (x <= context->mouse_x &&
-            context->mouse_x <= x + PAUSE_WIDTH &&
-            y <= context->mouse_y &&
-            context->mouse_y <= y + PAUSE_HEIGHT) {
+    if (x <= context->mouse.x &&
+            context->mouse.x <= x + PAUSE_WIDTH &&
+            y <= context->mouse.y &&
+            context->mouse.y <= y + PAUSE_HEIGHT) {
         color = WITH_ALPHA(color, 150);
     }
 

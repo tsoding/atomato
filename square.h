@@ -19,6 +19,45 @@
 #define CELL_HEIGHT ((float) SCREEN_HEIGHT / (float) ROWS)
 
 typedef struct {
+    float scale;
+    V2 pos;
+} Camera;
+
+V2 camera_to_screen(const Camera *camera, V2 world)
+{
+    const V2 half_screen = v2_scale((V2) {
+        SCREEN_WIDTH, SCREEN_HEIGHT
+    }, 0.5f);
+
+    return v2_add(
+               v2_scale(
+                   v2_add(world, camera->pos),
+                   camera->scale),
+               half_screen);
+}
+
+V2 camera_to_world(const Camera *camera, V2 screen)
+{
+    const V2 half_screen = v2_scale((V2) {
+        SCREEN_WIDTH, SCREEN_HEIGHT
+    }, 0.5f);
+
+    return v2_sub(
+               v2_scale(
+                   v2_sub(screen, half_screen),
+                   1.0f / camera->scale),
+               camera->pos);
+}
+
+Camera default_camera(void)
+{
+    return (Camera) {
+        .pos = {0},
+        .scale = 1.0f,
+    };
+}
+
+typedef struct {
     Core core;
     bool cell_clicked;
     int cell_row;
@@ -29,9 +68,7 @@ typedef struct {
     SDL_Texture *board_texture;
     void *board_pixels;
     int board_pitch;
-    float camera_scale;
-    float camera_x;
-    float camera_y;
+    Camera camera;
 } Square;
 
 void square_begin(Square *context)
@@ -49,9 +86,7 @@ void square_begin(Square *context)
     scc(SDL_SetTextureBlendMode(context->board_texture,
                                 SDL_BLENDMODE_BLEND));
 
-    context->camera_scale = 1.0;
-    context->camera_x = 0;
-    context->camera_y = 0;
+    context->camera = default_camera();
 }
 
 void square_end(Square *context)
@@ -68,9 +103,19 @@ float clampf(float v, float lo, float hi)
 bool square_time_to_quit(Square *context)
 {
     bool result = core_time_to_quit(&context->core);
-    // TODO: square framework does not take into account camera when mapping clickes on cells
-    context->cell_row = context->core.mouse_y / CELL_HEIGHT;
-    context->cell_col = context->core.mouse_x / CELL_WIDTH;
+    // TODO: square framework does not take into account camera when mapping clickes on cell
+
+    const V2 half_screen = v2_scale((V2) {
+        SCREEN_WIDTH, SCREEN_HEIGHT
+    }, 0.5f);
+
+    const V2 world_mouse =
+        v2_add(
+            camera_to_world(&context->camera, context->core.mouse),
+            half_screen);
+
+    context->cell_row = world_mouse.y / CELL_HEIGHT;
+    context->cell_col = world_mouse.x / CELL_WIDTH;
     context->cell_clicked = context->core.mouse_clicked;
 
     if (context->core.keyboard['g']) {
@@ -81,23 +126,22 @@ bool square_time_to_quit(Square *context)
     // SDL_SetHint(SDL_HINT_RENDER_SCALE_QUALITY, "linear");
 
     if (context->core.mouse_wheel_y != 0) {
-        context->camera_scale =
-            clampf(context->camera_scale + context->core.mouse_wheel_y * 0.25f * context->camera_scale,
+        context->camera.scale =
+            clampf(context->camera.scale + context->core.mouse_wheel_y * 0.25f * context->camera.scale,
                    0.005f,
                    100.0f);
     }
 
     if (context->core.keyboard['0']) {
-        context->camera_x = 0.0;
-        context->camera_y = 0.0;
-        context->camera_scale = 1.0;
+        context->camera = default_camera();
     }
 
     if (context->core.mouse_pressed) {
-        const float dx = context->core.mouse_x - context->core.prev_mouse_x;
-        const float dy = context->core.mouse_y - context->core.prev_mouse_y;
-        context->camera_x += dx / context->camera_scale;
-        context->camera_y += dy / context->camera_scale;
+        const V2 d = v2_sub(context->core.mouse, context->core.prev_mouse);
+        context->camera.pos =
+            v2_add(
+                context->camera.pos,
+                v2_scale(d, 1.0f / context->camera.scale));
     }
 
     return result;
@@ -141,17 +185,19 @@ void square_end_rendering(Square *context)
 {
     SDL_UnlockTexture(context->board_texture);
 
-    const float w = SCREEN_WIDTH * context->camera_scale;
-    const float h = SCREEN_HEIGHT * context->camera_scale;
-    const float x = SCREEN_WIDTH * 0.5 - w * 0.5 + context->camera_x * context->camera_scale;
-    const float y = SCREEN_HEIGHT * 0.5 - h * 0.5 + context->camera_y * context->camera_scale;
+    V2 pos = camera_to_screen(
+                 &context->camera,
+                 v2(SCREEN_WIDTH * -0.5f, SCREEN_HEIGHT * -0.5f));
+    V2 size = v2_scale(
+                  v2(SCREEN_WIDTH, SCREEN_HEIGHT),
+                  context->camera.scale);
 
     const SDL_Rect srcrect = {0, 0, COLS, ROWS};
     const SDL_Rect dstrect = {
-        (int) floorf(x),
-        (int) floorf(y),
-        (int) floorf(w),
-        (int) floorf(h)
+        (int) floorf(pos.x),
+        (int) floorf(pos.y),
+        (int) floorf(size.x),
+        (int) floorf(size.y)
     };
 
     scc(SDL_RenderCopy(context->core.renderer,
