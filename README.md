@@ -1,4 +1,4 @@
-# Cellular Tomato
+# Celery Tomato
 
 A collection of different [Cellular Automata](https://en.wikipedia.org/wiki/Cellular_automaton) implementations for recreational purposes
 
