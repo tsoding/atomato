@@ -103,7 +103,6 @@ float clampf(float v, float lo, float hi)
 bool square_time_to_quit(Square *context)
 {
     bool result = core_time_to_quit(&context->core);
-    // TODO: square framework does not take into account camera when mapping clickes on cell
 
     const V2 half_screen = v2_scale((V2) {
         SCREEN_WIDTH, SCREEN_HEIGHT
